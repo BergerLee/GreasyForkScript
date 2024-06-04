@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        辅导员一键打分
+// @name        重庆财经学院辅导员一键评分
 // @namespace   http://tampermonkey.net/
 // @match       http://xsc.cfec.edu.cn/cqrzxg/Sys/SystemForm/main.htm
 // @match       http://xsc.cfec.edu.cn/*
@@ -7,7 +7,7 @@
 // @version     1.0
 // @license     MIT
 // @author      Berger
-// @description 重庆财经学院学工系统辅导员打分
+// @description 重庆财经学院学工系统辅导员一键打分
 // ==/UserScript==
 
 (function () {
