@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        重庆财经学院教务系统一键评教
+// @name        重庆财经学院教务系统小工具
 // @namespace   http://tampermonkey.net/
 // @match       http://jwmis.cfec.edu.cn/jwglxt/xspjgl/xspj_cxXspjIndex.html?doType=details&gnmkdm=N401605&layout=default
 // @match       http://jwmis.cfec.edu.cn/jwglxt/wjdcgl/wjdc_cxWjdcIndex.html?gnmkdm=N402505&layout=default
@@ -7,7 +7,7 @@
 // @version     1.0
 // @license     MIT
 // @author      Berger
-// @description 重庆财经学院教务系统一键评教
+// @description 一键评教、一键完成调查问卷
 // ==/UserScript==
 
 (function () {
