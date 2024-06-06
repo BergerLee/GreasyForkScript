@@ -98,8 +98,7 @@
 
   - 同上
   - 进入 `课程页面 > 作业 > 作业详情 > 开始答题`
-  - 会在**适当的位置**会出现一个按钮，点击该按钮即可完成一键答题的操作。
-  - <img src=".\img\homeworkBtn.png" alt="homeworkBtn" style="zoom: 67%;" />
+  - 会在**适当的位置**会出现一个按钮，点击该按钮即可完成一键答题的操作。<img src=".\img\homeworkBtn.png" alt="homeworkBtn" style="zoom: 67%;" />
 
 - 一键完成视频任务 // TODO
 
