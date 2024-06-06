@@ -303,7 +303,7 @@
 
                 let autoSubmitSwitch = completeHomeworkDiv.querySelector('.el-switch')
                 autoSubmitSwitch.addEventListener("click", function () {
-                    utils.showDialog("自动提交风险提示", "本项目只适配了<选择题、填空题>，其他题型暂未适配，为保证答题安全，暂时不允许开放此项，请检查后手动提交作业！")
+                    utils.showDialog("自动提交风险提示", "本项目只适配了<选择题、填空题、多选题>，其他题型暂未适配，为保证答题安全，暂时不允许开放此项，请检查后手动提交作业！")
                 })
 
                 let completeHomeworkDivButton = completeHomeworkDiv.querySelector('.el-button')
@@ -344,12 +344,10 @@
                         } else if (questionType === 4) {
                             //填空题
                             const answer = JSON.parse(answers).map(item => item.answer);
-                            console.log(answer)
 
                             const inputList = questionDiv.querySelectorAll(".el-input__inner")
 
                             inputList.forEach(function (inputElement, index) {
-                                console.log(index, inputElement)
                                 const inputEvent = document.createEvent('Event');
                                 inputEvent.initEvent('input', true, true);
                                 inputElement.value = answer[index];
@@ -359,6 +357,26 @@
                                 inputElement.dispatchEvent(changeEvent);
                             })
 
+                        }else if (questionType === 2){
+                            // 多选题
+                            const optionItem = questionDiv.querySelectorAll(".option-list .option .item")
+                            optionItem.forEach(function (item) {
+                                for (let i = 0; i < answers.length; i++) {
+                                    // console.log(item.textContent)
+                                    if (answers.charAt(i) === item.textContent) {
+                                        // item.click()
+                                        // 创建一个点击事件
+                                        const clickEvent = document.createEvent('MouseEvent');
+
+                                        // 初始化事件类型为 'click'，并且冒泡和可取消
+                                        clickEvent.initEvent('click', true, true);
+
+                                        // 触发点击事件
+                                        item.dispatchEvent(clickEvent);
+                                    }
+                                }
+
+                            })
                         }
                     })
                     utils.showSuccessNotReload("自动答题成功，请检查！")
