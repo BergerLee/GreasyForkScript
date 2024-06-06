@@ -4,7 +4,7 @@
 // @match       https://online.zretc.net/
 // @match       https://online.zretc.net/*
 // @run-at      document-start
-// @version     1.2
+// @version     2.0
 // @license     MIT
 // @author      Berger
 // @description 智云枢一键清除红点提示、一键签到、一键完成作业
