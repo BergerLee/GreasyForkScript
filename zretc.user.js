@@ -23,130 +23,161 @@
     const originOpen = XMLHttpRequest.prototype.open;
 
     const utils = {
-            getValue(name) {
-                return GM_getValue(name);
-            },
+        getValue(name) {
+            return GM_getValue(name);
+        },
 
-            setValue(name, value) {
-                GM_setValue(name, value);
-            },
+        setValue(name, value) {
+            GM_setValue(name, value);
+        },
 
-            // 响应拦截器
-            responseInterceptor(apiUrl) {
-                XMLHttpRequest.prototype.open = function (method, url) {
-                    if (url.indexOf(apiUrl) !== -1) {
-                        this.addEventListener('readystatechange', function () {
-                            if (this.readyState === 4) {
-                                console.log(this.response)
-                                // const res = JSON.parse(this.responseText)
-                                // const modifiedProfileInfoResponse = modifyProfileInfoResponse(res)
-                                // Object.defineProperty(this, "responseText", {
-                                //     writable: true,
-                                // });
-                                // this.responseText = modifiedProfileInfoResponse
-                            }
-                        })
-                    }
-
-                    originOpen.apply(this, arguments);
+        // 响应拦截器
+        responseInterceptor(apiUrl) {
+            XMLHttpRequest.prototype.open = function (method, url) {
+                if (url.indexOf(apiUrl) !== -1) {
+                    this.addEventListener('readystatechange', function () {
+                        if (this.readyState === 4) {
+                            console.log(this.response)
+                            // const res = JSON.parse(this.responseText)
+                            // const modifiedProfileInfoResponse = modifyProfileInfoResponse(res)
+                            // Object.defineProperty(this, "responseText", {
+                            //     writable: true,
+                            // });
+                            // this.responseText = modifiedProfileInfoResponse
+                        }
+                    })
                 }
-            },
 
-            async sendApi(apiUrl, options) {
-                return await (await fetch(apiUrl, { // 修改为实际请求的URL
-                    method: options,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        "zretc-token": localStorage.getItem("zretc-token")
-                    }
-                })).json()
-            },
+                originOpen.apply(this, arguments);
+            }
+        },
 
-            async sendApiWithBody(apiUrl, options, body) {
-                return await (await fetch(apiUrl, { // 修改为实际请求的URL
-                    method: options,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        "zretc-token": localStorage.getItem("zretc-token")
-                    },
-                    body: JSON.stringify(body)
-                })).json()
-            },
-
-            showSuccess(message) {
-                Swal.fire({
-                    icon: "success",
-                    title: message,
-                    showConfirmButton: false,
-                    timer: 1300
-                }).then(() => {
-                    location.reload()
-                });
-            },
-
-            showSuccessNotReload(message) {
-                Swal.fire({
-                    icon: "success",
-                    title: message,
-                    showConfirmButton: false,
-                    timer: 1300
-                })
-            },
-
-            showError(message) {
-                Swal.fire({
-                    icon: "error",
-                    title: message,
-                    showConfirmButton: false,
-                    timer: 1300
-                })
-            },
-
-            showInfo(message) {
-                Swal.fire({
-                    icon: "info",
-                    title: message,
-                    showConfirmButton: false,
-                    timer: 1500
-                })
-            },
-
-            showLoad(msg) {
-                Swal.fire({
-                    title: "请等待...",
-                    html: msg,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    },
-                })
-            },
-
-            showDialog(title, text) {
-                Swal.fire({
-                    title: title,
-                    html: text,
-                    icon: "question"
-                });
-            },
-
-            async getStudentId(courseId) {
-                let studentId = 0;
-                try {
-                    const response = await this.sendApi(urlConstants.STUDENT_ID.replace('{}', courseId), 'GET');
-                    studentId = response['data']['studentId'];
-                } catch (error) {
-                    console.error('Error fetching student ID:', error);
+        async sendApi(apiUrl, options) {
+            return await (await fetch(apiUrl, { // 修改为实际请求的URL
+                method: options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    "zretc-token": localStorage.getItem("zretc-token")
                 }
-                return studentId;
-            },
+            })).json()
+        },
 
-            sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            },
+        async sendApiWithBody(apiUrl, options, body) {
+            return await (await fetch(apiUrl, { // 修改为实际请求的URL
+                method: options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    "zretc-token": localStorage.getItem("zretc-token")
+                },
+                body: JSON.stringify(body)
+            })).json()
+        },
+
+        showSuccess(message) {
+            Swal.fire({
+                icon: "success",
+                title: message,
+                showConfirmButton: false,
+                timer: 1300
+            }).then(() => {
+                location.reload()
+            });
+        },
+
+        showSuccessNotReload(message) {
+            Swal.fire({
+                icon: "success",
+                title: message,
+                showConfirmButton: false,
+                timer: 1300
+            })
+        },
+
+        showError(message) {
+            Swal.fire({
+                icon: "error",
+                title: message,
+                showConfirmButton: false,
+                timer: 1300
+            })
+        },
+
+        showInfo(message) {
+            Swal.fire({
+                icon: "info",
+                title: message,
+                showConfirmButton: false,
+                timer: 1500
+            })
+        },
+
+        showLoad(msg) {
+            Swal.fire({
+                title: "请等待...",
+                html: msg,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            })
+        },
+
+        showDialog(title, text) {
+            Swal.fire({
+                title: title,
+                html: text,
+                icon: "question"
+            });
+        },
+
+        async getStudentId(courseId) {
+            let studentId = 0;
+            try {
+                const response = await this.sendApi(urlConstants.STUDENT_ID.replace('{}', courseId), 'GET');
+                studentId = response['data']['studentId'];
+            } catch (error) {
+                console.error('Error fetching student ID:', error);
+            }
+            return studentId;
+        },
+
+        sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        },
 
 
-        }
-    ;
+        // Levenshtein距离算法
+        levenshtein(a, b) {
+            const matrix = [];
+
+            // 初始化矩阵
+            for (let i = 0; i <= b.length; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= a.length; j++) {
+                matrix[0][j] = j;
+            }
+
+            // 填充矩阵
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1, // 替换
+                            Math.min(matrix[i][j - 1] + 1, // 插入
+                                matrix[i - 1][j] + 1) // 删除
+                        );
+                    }
+                }
+            }
+
+            return matrix[b.length][a.length];
+        },
+
+
+    }
 
     // 创建清除小红点按钮
     function createClearButton() {
@@ -310,73 +341,124 @@
 
                 completeHomeworkDivButton.addEventListener("click", async function () {
 
-
-                    utils.showLoad("正在完成作业，请耐心等待....")
+                    // utils.showLoad("正在完成作业，请耐心等待....")
                     const urlObj = new URL(currentUrl);
                     const homeworkId = urlObj.searchParams.get("homeworkId");
                     const homeworkDetail = await utils.sendApi(urlConstants.HOMEWORK_DETAIL.replace("{}", homeworkId), 'GET')
                     const contentObjDTOList = homeworkDetail['data']['contentObjDTOList']
-                    // console.log(contentObjDTOList)
+                    console.log(contentObjDTOList)
+
+
+                    // 循环后端返回来的题目
                     contentObjDTOList.forEach(function (contentObjDTO, index) {
+                        // 题目类型
                         const questionType = contentObjDTO['queType']
-                        const answers = contentObjDTO['answer']
+                        // 答案选项
+                        const answersOptionByResponse = contentObjDTO['answer']
+                        // 答案选项列表 如A、B、C、D
+                        const questionOptionsListByResponse = contentObjDTO['questionOptions']
 
-                        const questionDiv = document.querySelectorAll(".question")[index]
+                        let temptDivResponse = document.createElement('div')
+                        // 后端返回来的题目
+                        temptDivResponse.innerHTML = contentObjDTO['content']
+                        const questionByResponseHandle = temptDivResponse.textContent
+                        // console.log(questionByResponseHandle)
 
-                        if (questionType === 1 || questionType === 3) {
-                            //单选题 or 判断题
-                            const optionItem = questionDiv.querySelectorAll(".option-list .option .item")
-                            // console.log(index,optionItem)
-                            optionItem.forEach(function (item) {
-                                // console.log(item.textContent)
-                                if (answers === item.textContent) {
-                                    // item.click()
-                                    // 创建一个点击事件
-                                    const clickEvent = document.createEvent('MouseEvent');
+                        // 页面上的题目DIV
+                        const questionDivByPageList = document.querySelectorAll(".question")
+                        for (let i = 0; i < questionDivByPageList.length; i++) {
+                            //题目内容
+                            const questionByPageList = questionDivByPageList[i].querySelector('.que-title > .title-box >.ck-content')
+                            const questionByPageHandle = questionByPageList.textContent
 
-                                    // 初始化事件类型为 'click'，并且冒泡和可取消
-                                    clickEvent.initEvent('click', true, true);
 
-                                    // 触发点击事件
-                                    item.dispatchEvent(clickEvent);
-                                }
-                            })
-                        } else if (questionType === 4) {
-                            //填空题
-                            const answer = JSON.parse(answers).map(item => item.answer);
+                            // 计算Levenshtein距离
+                            const distance = utils.levenshtein(questionByResponseHandle, questionByPageHandle);
+                            const maxLength = Math.max(questionByResponseHandle.length, questionByPageHandle.length);
+                            const similarity = 1 - (distance / maxLength);
 
-                            const inputList = questionDiv.querySelectorAll(".el-input__inner")
+                            let answerContent = ''
+                            let answerContentHandle = ''
+                            // 检查相似度 校验页面题目和后端题目
+                            if (similarity > 0.7) { // 0.8为相似度阈值，可以调整
+                                if (questionType === 1 || questionType === 3) {
+                                    for (let j = 0; j < questionOptionsListByResponse.length; j++) {
+                                        if (answersOptionByResponse === questionOptionsListByResponse[j]['optKey']) {
+                                            answerContent = questionOptionsListByResponse[j]['content']
+                                            let answerDivTempt = document.createElement('div')
+                                            answerDivTempt.innerHTML = answerContent
+                                            answerContentHandle = answerDivTempt.textContent
+                                            // console.log(answerContentHandle)
+                                            break
+                                        }
+                                    }
 
-                            inputList.forEach(function (inputElement, index) {
-                                const inputEvent = document.createEvent('Event');
-                                inputEvent.initEvent('input', true, true);
-                                inputElement.value = answer[index];
-                                inputElement.dispatchEvent(inputEvent);
-                                const changeEvent = document.createEvent('Event');
-                                changeEvent.initEvent('change', true, true);
-                                inputElement.dispatchEvent(changeEvent);
-                            })
+                                    // 页面选项
+                                    const optionsListByPage = questionDivByPageList[i].querySelector('.option-list')
+                                    const optionItem = optionsListByPage.querySelectorAll('.ck-content')
+                                    for (let optionIndex = 0; optionIndex < optionItem.length; optionIndex++) {
+                                        // console.log(optionItem[optionIndex].textContent)
+                                        if (answerContentHandle === optionItem[optionIndex].textContent) {
+                                            optionItem[optionIndex].click()
+                                            break
+                                        }
+                                    }
+                                } else if (questionType === 4) {
+                                    // 填空题
+                                    //获取input
+                                    const inputList = questionDivByPageList[i].querySelectorAll(".el-input__inner")
+                                    // console.log(answersOptionByResponse)
+                                    const answer = JSON.parse(answersOptionByResponse).map(item => item.answer);
 
-                        }else if (questionType === 2){
-                            // 多选题
-                            const optionItem = questionDiv.querySelectorAll(".option-list .option .item")
-                            optionItem.forEach(function (item) {
-                                for (let i = 0; i < answers.length; i++) {
-                                    // console.log(item.textContent)
-                                    if (answers.charAt(i) === item.textContent) {
-                                        // item.click()
-                                        // 创建一个点击事件
-                                        const clickEvent = document.createEvent('MouseEvent');
+                                    inputList.forEach(function (inputElement) {
+                                        const inputEvent = document.createEvent('Event');
+                                        inputEvent.initEvent('input', true, true);
+                                        inputElement.value = answer;
+                                        inputElement.dispatchEvent(inputEvent);
+                                        const changeEvent = document.createEvent('Event');
+                                        changeEvent.initEvent('change', true, true);
+                                        inputElement.dispatchEvent(changeEvent);
+                                    })
+                                } else if (questionType === 2) {
+                                    // 多选题
+                                    console.log(questionOptionsListByResponse)
+                                    console.log(answersOptionByResponse)
 
-                                        // 初始化事件类型为 'click'，并且冒泡和可取消
-                                        clickEvent.initEvent('click', true, true);
+                                    let answerHandleArray = new Set()
+                                    for (let j = 0; j < answersOptionByResponse.length; j++) {
+                                        for (let k = 0; k < questionOptionsListByResponse.length; k++) {
+                                            if (answersOptionByResponse.charAt(j) === questionOptionsListByResponse[k]['optKey']) {
+                                                // 包含 HTML 实体编码的文本
+                                                // const encodedText = '<p><span style="background-color:rgb(253,253,254);color:rgb(5,7,59);">&lt;result&gt;</span></p>';
+                                                const tempDiv = document.createElement('div');
+                                                tempDiv.innerHTML = questionOptionsListByResponse[k]['content'];
+                                                // const decodedText = tempDiv.innerHTML;
+                                                // console.log(tempDiv.textContent)
+                                                answerHandleArray.add(tempDiv.textContent)
+                                            }
+                                        }
+                                    }
 
-                                        // 触发点击事件
-                                        item.dispatchEvent(clickEvent);
+                                    // console.log(answerHandleArray)
+                                    // console.log("================================")
+
+                                    // 页面选项
+                                    const optionsListByPage = questionDivByPageList[i].querySelector('.option-list')
+                                    const optionItem = optionsListByPage.querySelectorAll('.ck-content')
+                                    for (let optionIndex = 0; optionIndex < optionItem.length; optionIndex++) {
+                                        // console.log(optionItem[optionIndex].textContent)
+                                        answerHandleArray.forEach(function (answerItem) {
+                                            const answerHandlePage = optionItem[optionIndex].textContent || optionItem[optionIndex].innerText;
+                                            // console.log(answerItem)
+                                            if (answerItem === answerHandlePage) {
+                                                optionItem[optionIndex].click()
+                                            }
+                                        })
                                     }
                                 }
+                                break
 
-                            })
+                            }
                         }
                     })
                     utils.showSuccessNotReload("自动答题成功，请检查！")
