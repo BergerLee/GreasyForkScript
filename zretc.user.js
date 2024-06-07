@@ -4,10 +4,10 @@
 // @match       https://online.zretc.net/
 // @match       https://online.zretc.net/*
 // @run-at      document-start
-// @version     2.0
+// @version     2.3
 // @license     MIT
 // @author      Berger
-// @description 智云枢一键清除红点提示、一键签到、一键完成作业
+// @description 智云枢一键清除红点提示、一键签到、一键完成作业、一键考试
 // @grant       GM_addStyle
 // @grant       GM_setValue
 // @grant       GM_getValue
