@@ -4,10 +4,10 @@
 // @match       https://online.zretc.net/
 // @match       https://online.zretc.net/*
 // @run-at      document-start
-// @version     2.3
+// @version     2.8
 // @license     MIT
 // @author      Berger
-// @description 智云枢一键清除红点提示、一键签到、一键完成作业、一键考试
+// @description 智云枢一键清除红点提示、一键签到、一键完成作业、一键考试、提前查看考试/作业分数
 // @grant       GM_addStyle
 // @grant       GM_setValue
 // @grant       GM_getValue
@@ -15,6 +15,11 @@
 // @require     https://registry.npmmirror.com/hotkeys-js/3.13.3/files/dist/hotkeys.min.js
 // @resource    https://registry.npmmirror.com/sweetalert2/10.16.6/files/dist/sweetalert2.min.css
 // ==/UserScript==
+
+/*
+ * 更新日志：
+ * - Version 2.8: [新增]提前查看考试/作业分数
+ */
 
 (function () {
     'use strict';
@@ -33,23 +38,36 @@
 
         // 响应拦截器
         responseInterceptor(apiUrl) {
-            XMLHttpRequest.prototype.open = function (method, url) {
-                if (url.indexOf(apiUrl) !== -1) {
-                    this.addEventListener('readystatechange', function () {
-                        if (this.readyState === 4) {
-                            console.log(this.response)
-                            // const res = JSON.parse(this.responseText)
-                            // const modifiedProfileInfoResponse = modifyProfileInfoResponse(res)
-                            // Object.defineProperty(this, "responseText", {
-                            //     writable: true,
-                            // });
-                            // this.responseText = modifiedProfileInfoResponse
-                        }
-                    })
-                }
+            return new Promise((resolve, reject) => {
+                // 修改 open 方法
+                XMLHttpRequest.prototype.open = function (method, url) {
+                    // 检查 URL 是否包含指定的 apiUrl
+                    if (url.indexOf(apiUrl) !== -1) {
+                        // 监听 readystatechange 事件
+                        this.addEventListener('readystatechange', function () {
+                            if (this.readyState === 4) { // 请求完成
+                                // 获取响应体
+                                const res = JSON.parse(this.responseText);
+                                resolve(res); // 解析 Promise 并返回响应数据
+                            }
+                        });
+                    }
 
-                originOpen.apply(this, arguments);
-            }
+                    // 调用原始的 open 方法
+                    originOpen.apply(this, arguments);
+                };
+            });
+            // XMLHttpRequest.prototype.open = function (method, url) {
+            //     if (url.indexOf(apiUrl) !== -1) {
+            //         this.addEventListener('readystatechange', function () {
+            //             if (this.readyState === 4) {
+            //                 // 返回响应体
+            //             }
+            //         })
+            //     }
+            //
+            //     originOpen.apply(this, arguments);
+            // }
         },
 
         async sendApi(apiUrl, options) {
@@ -176,8 +194,9 @@
             return matrix[b.length][a.length];
         },
 
-
     }
+
+    // utils.responseInterceptor('/submit-score')
 
     // 创建清除小红点按钮
     function createClearButton() {
@@ -310,6 +329,7 @@
 
     }
 
+
     // 作业答题页面创建按钮
     function createCompleteHomeWorkButton() {
         let completeHomeworkDiv = document.createElement('div');
@@ -345,14 +365,14 @@
                     const urlObj = new URL(currentUrl);
                     let homeworkDetail = ''
 
-                    if ((currentUrl.indexOf('/exams/') !== -1)){
+                    if ((currentUrl.indexOf('/exams/') !== -1)) {
                         // // 获取当前页面的URL
                         // const currentURL = window.location.href;
                         const regex = /\/exams\/(\d+)\?/;
                         const match = currentUrl.match(regex);
                         // alert(match[1])
                         homeworkDetail = await utils.sendApi(urlConstants.HOMEWORK_DETAIL.replace("{}", match[1]), 'GET')
-                    }else {
+                    } else {
                         const homeworkId = urlObj.searchParams.get("homeworkId");
                         homeworkDetail = await utils.sendApi(urlConstants.HOMEWORK_DETAIL.replace("{}", homeworkId), 'GET')
                     }
@@ -481,12 +501,44 @@
         }, 1000); // 每隔 1 秒检查一次
     }
 
+
+    function createQueryScoreInfo() {
+        let queryScoreButton = document.createElement('div');
+
+
+        utils.responseInterceptor('/submit-score').then(scoreResponse => {
+            let score = scoreResponse['data'][0]['score']
+            // console.log(score)
+
+            queryScoreButton.innerHTML = `<div data-v-439af87f="" class="instruction update-score"><p>
+            当前试卷得分：${score} 分 | 点击此处刷新分数</p></div>`;
+        })
+
+        queryScoreButton.addEventListener('click',function (){
+            window.location.reload()
+        })
+
+
+        let intervalId = setInterval(function () {
+            let videoBox = document.querySelectorAll('.list-bg');
+            if (videoBox.length > 0) {
+                clearInterval(intervalId); // 停止定时器
+
+                videoBox[2].appendChild(queryScoreButton)
+            }
+
+
+        }, 1000); // 每隔 1 秒检查一次
+
+    }
+
     let main = {
         init() {
             createSignButton()
             createClearButton()
             createCompleteVideoButton()
             createCompleteHomeWorkButton()
+            createQueryScoreInfo()
 
             const currentUrl = window.location.href
             if (currentUrl.indexOf('/course/student/courses') !== -1) {
@@ -500,11 +552,9 @@
 
             }
         }
-
     }
 
     window.addEventListener('load', main.init);
-
 
     class urlConstants {
         static CLASS_LIST = "https://api.zretc.net/instances/instances/stu/my-instance?pageSize=10&pageNum=1&instanceStatus&orderBy=1&orderByWay=DESC"
