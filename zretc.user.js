@@ -324,7 +324,7 @@
         let intervalId = setInterval(async function () {
             const currentUrl = window.location.href
             let homeworkBox = document.querySelectorAll('.right-box');
-            if (homeworkBox.length > 0 && (currentUrl.indexOf('&homeworkId=') !== -1)) {
+            if (homeworkBox.length > 0 && ((currentUrl.indexOf('&homeworkId=') !== -1) || (currentUrl.indexOf('/exams/') !== -1))) {
                 clearInterval(intervalId); // 停止定时器
                 if (homeworkBox[0].firstChild) {
                     homeworkBox[0].insertBefore(completeHomeworkDiv, homeworkBox[0].firstChild);
@@ -343,8 +343,19 @@
 
                     // utils.showLoad("正在完成作业，请耐心等待....")
                     const urlObj = new URL(currentUrl);
-                    const homeworkId = urlObj.searchParams.get("homeworkId");
-                    const homeworkDetail = await utils.sendApi(urlConstants.HOMEWORK_DETAIL.replace("{}", homeworkId), 'GET')
+                    let homeworkDetail = ''
+
+                    if ((currentUrl.indexOf('/exams/') !== -1)){
+                        // // 获取当前页面的URL
+                        // const currentURL = window.location.href;
+                        const regex = /\/exams\/(\d+)\?/;
+                        const match = currentUrl.match(regex);
+                        // alert(match[1])
+                        homeworkDetail = await utils.sendApi(urlConstants.HOMEWORK_DETAIL.replace("{}", match[1]), 'GET')
+                    }else {
+                        const homeworkId = urlObj.searchParams.get("homeworkId");
+                        homeworkDetail = await utils.sendApi(urlConstants.HOMEWORK_DETAIL.replace("{}", homeworkId), 'GET')
+                    }
                     const contentObjDTOList = homeworkDetail['data']['contentObjDTOList']
                     console.log(contentObjDTOList)
 
