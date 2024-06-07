@@ -341,7 +341,7 @@
 
                 completeHomeworkDivButton.addEventListener("click", async function () {
 
-                    // utils.showLoad("正在完成作业，请耐心等待....")
+                    utils.showLoad("正在完成作业，请耐心等待....")
                     const urlObj = new URL(currentUrl);
                     let homeworkDetail = ''
 
