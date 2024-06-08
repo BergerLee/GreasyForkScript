@@ -4,7 +4,7 @@
 // @match       https://online.zretc.net/
 // @match       https://online.zretc.net/*
 // @run-at      document-start
-// @version     2.8
+// @version     2.9
 // @license     MIT
 // @author      Berger
 // @description 智云枢一键清除红点提示、一键签到、一键完成作业、一键考试、提前查看考试/作业分数
@@ -15,11 +15,6 @@
 // @require     https://registry.npmmirror.com/hotkeys-js/3.13.3/files/dist/hotkeys.min.js
 // @resource    https://registry.npmmirror.com/sweetalert2/10.16.6/files/dist/sweetalert2.min.css
 // ==/UserScript==
-
-/*
- * 更新日志：
- * - Version 2.8: [新增]提前查看考试/作业分数
- */
 
 (function () {
     'use strict';
@@ -256,6 +251,7 @@
                         const studentId = await utils.getStudentId(courseId)
                         urlConstants.SIGN_BODY.signInId = signId
                         urlConstants.SIGN_BODY.studentId = studentId
+                        console.log(signId)
                         // 执行签到
                         const signResponse = await utils.sendApiWithBody(urlConstants.SIGN.replace('{}', courseId).replace('{}', signId), 'PATCH', urlConstants.SIGN_BODY)
                         if (signResponse['code'] === '1') {
@@ -501,30 +497,27 @@
         }, 1000); // 每隔 1 秒检查一次
     }
 
-
     function createQueryScoreInfo() {
         let queryScoreButton = document.createElement('div');
 
-
         utils.responseInterceptor('/submit-score').then(scoreResponse => {
             let score = scoreResponse['data'][0]['score']
-            // console.log(score)
-
             queryScoreButton.innerHTML = `<div data-v-439af87f="" class="instruction update-score"><p>
-            当前试卷得分：${score} 分 | 点击此处刷新分数</p></div>`;
-        })
+        当前试卷得分：${score} 分</p></div>`;
 
-        queryScoreButton.addEventListener('click',function (){
-            window.location.reload()
         })
-
 
         let intervalId = setInterval(function () {
             let videoBox = document.querySelectorAll('.list-bg');
             if (videoBox.length > 0) {
                 clearInterval(intervalId); // 停止定时器
-
+                const scoreDiv = document.querySelectorAll('.update-score')
+                if (scoreDiv.length > 0){
+                    scoreDiv[0].remove()
+                }
                 videoBox[2].appendChild(queryScoreButton)
+
+
             }
 
 
@@ -538,15 +531,14 @@
             createClearButton()
             createCompleteVideoButton()
             createCompleteHomeWorkButton()
-            createQueryScoreInfo()
 
             const currentUrl = window.location.href
             if (currentUrl.indexOf('/course/student/courses') !== -1) {
                 const strings = currentUrl.split('/');
                 strings.forEach(function (key, index) {
                     if (key.length > 14 && key > 3) {
-                        // console.log(key)
                         utils.setValue("courseId", key)
+                        console.log("courseId", key)
                     }
                 })
 
@@ -554,7 +546,22 @@
         }
     }
 
+
     window.addEventListener('load', main.init);
+
+    window.addEventListener('load', function () {
+        // 监听 Vue 实例的创建
+        const vueInstanceObserver = new MutationObserver(function (mutationsList, observer) {
+            mutationsList.forEach(mutation => {
+                // 如果新增了一个节点，并且这个节点是 Vue 实例所在的 DOM 元素
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0 && mutation.addedNodes[0].__vue__) {
+                    createQueryScoreInfo()
+                }
+            });
+        });
+
+        vueInstanceObserver.observe(document.body, {childList: true, subtree: true});
+    })
 
     class urlConstants {
         static CLASS_LIST = "https://api.zretc.net/instances/instances/stu/my-instance?pageSize=10&pageNum=1&instanceStatus&orderBy=1&orderByWay=DESC"
