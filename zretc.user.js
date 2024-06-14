@@ -4,21 +4,24 @@
 // @match       https://online.zretc.net/
 // @match       https://online.zretc.net/*
 // @run-at      document-start
-// @version     2.9
+// @version     2.92
 // @license     MIT
 // @author      Berger
 // @description 智云枢一键清除红点提示、一键签到、一键完成作业、一键考试、提前查看考试/作业分数
 // @grant       GM_addStyle
 // @grant       GM_setValue
 // @grant       GM_getValue
+// @grant       GM_addStyle
+// @grant       GM_getResourceText
 // @require     https://registry.npmmirror.com/sweetalert2/10.16.6/files/dist/sweetalert2.min.js
 // @require     https://registry.npmmirror.com/hotkeys-js/3.13.3/files/dist/hotkeys.min.js
-// @resource    https://registry.npmmirror.com/sweetalert2/10.16.6/files/dist/sweetalert2.min.css
+// @resource    sweetalert2CSS https://registry.npmmirror.com/sweetalert2/10.16.6/files/dist/sweetalert2.min.css
 // ==/UserScript==
 
 (function () {
     'use strict';
-    const classList = []
+
+    GM_addStyle(GM_getResourceText("sweetalert2CSS"));
 
     const originOpen = XMLHttpRequest.prototype.open;
 
@@ -52,17 +55,30 @@
                     originOpen.apply(this, arguments);
                 };
             });
-            // XMLHttpRequest.prototype.open = function (method, url) {
-            //     if (url.indexOf(apiUrl) !== -1) {
-            //         this.addEventListener('readystatechange', function () {
-            //             if (this.readyState === 4) {
-            //                 // 返回响应体
-            //             }
-            //         })
-            //     }
-            //
-            //     originOpen.apply(this, arguments);
-            // }
+        },
+
+        modifyResponse(apiUrl, key, value) {
+            XMLHttpRequest.prototype.open = function (method, url) {
+                // 检查 URL 是否包含指定的 apiUrl
+                if (url.indexOf(apiUrl) !== -1) {
+                    // 监听 readystatechange 事件
+                    this.addEventListener('readystatechange', function () {
+                        if (this.readyState === 4) { // 请求完成
+                            alert(1)
+                            // 获取响应体
+                            // const res = JSON.parse(this.responseText);
+                            // Object.defineProperty(this, "response", {
+                            //     writable: true,
+                            // });
+                            // res['data'][key] = value
+                            // console.log(res)
+                        }
+                    });
+                }
+
+                // 调用原始的 open 方法
+                originOpen.apply(this, arguments);
+            };
         },
 
         async sendApi(apiUrl, options) {
@@ -190,8 +206,6 @@
         },
 
     }
-
-    // utils.responseInterceptor('/submit-score')
 
     // 创建清除小红点按钮
     function createClearButton() {
@@ -329,12 +343,22 @@
     // 作业答题页面创建按钮
     function createCompleteHomeWorkButton() {
         let completeHomeworkDiv = document.createElement('div');
+        completeHomeworkDiv.style.display = 'block'
         completeHomeworkDiv.innerHTML = `<div style="background-color: #FFFFFF;margin-bottom: 10px">
 <button class="el-button el-button--danger el-button--small" style="margin: 10px">一键完成</button>
-<div role="switch" class="el-switch">
-<span style="margin-right: 5px">自动提交 </span>
-<input type="checkbox" class="el-switch__input"><span class="el-switch__core" style="width: 40px;"></span></div>
+<span style="font-size: 12px">H键自动隐藏/显示本窗口 </span>
 </div>`
+
+        // 添加快捷键
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'h' || event.key === 'H') {
+                if (completeHomeworkDiv.style.display === 'none') {
+                    completeHomeworkDiv.style.display = 'block';
+                } else {
+                    completeHomeworkDiv.style.display = 'none';
+                }
+            }
+        });
 
 
         let intervalId = setInterval(async function () {
@@ -347,12 +371,6 @@
                 } else {
                     homeworkBox[0].appendChild(completeHomeworkDiv);
                 }
-
-                let autoSubmitSwitch = completeHomeworkDiv.querySelector('.el-switch')
-                autoSubmitSwitch.addEventListener("click", function () {
-                    utils.showDialog("自动提交风险提示", "本项目只适配了<选择题、填空题、多选题>，其他题型暂未适配，为保证答题安全，暂时不允许开放此项，请检查后手动提交作业！")
-                })
-
                 let completeHomeworkDivButton = completeHomeworkDiv.querySelector('.el-button')
 
                 completeHomeworkDivButton.addEventListener("click", async function () {
@@ -497,14 +515,53 @@
         }, 1000); // 每隔 1 秒检查一次
     }
 
+    function createCompulsiveFinishWorkButton() {
+        let finishBtnDiv = document.createElement('div');
+        finishBtnDiv.className = 'finish-compulsive-div'
+        finishBtnDiv.innerHTML = '<button class="el-button el-button--danger el-button--small" style="margin-right: 10px; border: 1px solid rgb(243, 245, 248); ">强制答题</button>'
+
+        let btnBox = document.querySelectorAll('.list-bg > div');
+        let startBtn = btnBox[2].querySelector("button[disabled='disabled'][type='button']");
+
+        const isExistCompulsiveBtn = document.querySelector("div[class='finish-compulsive-div']")
+
+        utils.responseInterceptor('homework-submit-info').then((response) => {
+            console.log(response)
+            if (response['data']) {
+                const resData = response['data']
+                switch (resData['status']) {
+                    case 1:// 已提交
+                        startBtn.style.display = 'block'
+                        if (isExistCompulsiveBtn) {
+                            isExistCompulsiveBtn.remove()
+                        }
+                        break
+                    case 2: // 错过提交
+                        utils.setValue('homeworkId', resData['homeworkId'])
+                        if (startBtn && isExistCompulsiveBtn == null) {
+                            startBtn.style.display = 'none'
+                            btnBox[2].insertBefore(finishBtnDiv, btnBox[2].firstChild);
+                        }
+                        break
+                }
+            }
+        })
+
+        isExistCompulsiveBtn.addEventListener('click', function () {
+            console.log(utils.getValue('homeworkId'))
+        })
+
+    }
+
     function createQueryScoreInfo() {
         let queryScoreButton = document.createElement('div');
 
         utils.responseInterceptor('/submit-score').then(scoreResponse => {
             let score = scoreResponse['data'][0]['score']
-            queryScoreButton.innerHTML = `<div data-v-439af87f="" class="instruction update-score"><p>
+            if (score) {
+                queryScoreButton.innerHTML = `<div data-v-439af87f="" class="instruction update-score"><p>
         当前试卷得分：${score} 分</p></div>`;
-
+            }
         })
 
         let intervalId = setInterval(function () {
@@ -512,7 +569,7 @@
             if (videoBox.length > 0) {
                 clearInterval(intervalId); // 停止定时器
                 const scoreDiv = document.querySelectorAll('.update-score')
-                if (scoreDiv.length > 0){
+                if (scoreDiv.length > 0) {
                     scoreDiv[0].remove()
                 }
                 videoBox[2].appendChild(queryScoreButton)
@@ -524,6 +581,32 @@
         }, 1000); // 每隔 1 秒检查一次
 
     }
+
+    function modifyEndTime() {
+        // utils.modifyResponse('/work/do', 'endTime', 4102329600000)
+        XMLHttpRequest.prototype.open = function (method, url) {
+            console.log(url)
+            // alert(url.indexOf('/homework/homeworks/') !== -1)
+            // if (url.indexOf('/questions') !== -1) {
+            //     console.log(url)
+            //     // this.addEventListener('readystatechange', function () {
+            //     //     if (this.readyState === 4) {
+            //     //         alert(1)
+            //     //         // const modifiedQuotaResponse = modifyQuotaResponse(this.response)
+            //     //         // Object.defineProperty(this, "response", {
+            //     //         //     writable: true,
+            //     //         // });
+            //     //         // this.response = JSON.stringify(modifiedQuotaResponse)
+            //     //     }
+            //     // })
+            // }
+
+            originOpen.apply(this, arguments);
+        }
+    }
+
+    // modifyEndTime()
+
 
     let main = {
         init() {
@@ -543,9 +626,8 @@
                 })
 
             }
-        }
+        },
     }
-
 
     window.addEventListener('load', main.init);
 
@@ -553,9 +635,9 @@
         // 监听 Vue 实例的创建
         const vueInstanceObserver = new MutationObserver(function (mutationsList, observer) {
             mutationsList.forEach(mutation => {
-                // 如果新增了一个节点，并且这个节点是 Vue 实例所在的 DOM 元素
                 if (mutation.type === 'childList' && mutation.addedNodes.length > 0 && mutation.addedNodes[0].__vue__) {
                     createQueryScoreInfo()
+                    // createCompulsiveFinishWorkButton()
                 }
             });
         });
