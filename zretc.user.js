@@ -4,10 +4,10 @@
 // @match       https://online.zretc.net/
 // @match       https://online.zretc.net/*
 // @run-at      document-start
-// @version     2.92
+// @version     2.95
 // @license     MIT
 // @author      Berger
-// @description 智云枢一键清除红点提示、一键签到、一键完成作业、一键考试、提前查看考试/作业分数
+// @description 智云枢一键签到、一键完成作业、一键考试、提前查看考试/作业分数
 // @grant       GM_addStyle
 // @grant       GM_setValue
 // @grant       GM_getValue
@@ -59,19 +59,19 @@
 
         modifyResponse(apiUrl, key, value) {
             XMLHttpRequest.prototype.open = function (method, url) {
-                // 检查 URL 是否包含指定的 apiUrl
+                console.log(url.indexOf(apiUrl))
                 if (url.indexOf(apiUrl) !== -1) {
                     // 监听 readystatechange 事件
                     this.addEventListener('readystatechange', function () {
                         if (this.readyState === 4) { // 请求完成
-                            alert(1)
                             // 获取响应体
-                            // const res = JSON.parse(this.responseText);
-                            // Object.defineProperty(this, "response", {
-                            //     writable: true,
-                            // });
-                            // res['data'][key] = value
-                            // console.log(res)
+                            const res = JSON.parse(this.responseText);
+                            Object.defineProperty(this, "response", {
+                                writable: true,
+                            });
+                            res['data'][key] = value
+                            this.responseText = res
+                            console.log('res', res)
                         }
                     });
                 }
@@ -207,42 +207,6 @@
 
     }
 
-    // 创建清除小红点按钮
-    function createClearButton() {
-        let clearButton = document.createElement('div');
-        clearButton.innerHTML = '<button class="el-button el-button--danger el-button--small">清除小红点</button>';
-
-        let handleBox = document.querySelectorAll('.handle-box');
-
-        handleBox.forEach(function (divElement) {
-            divElement.appendChild(clearButton);
-            clearButton.addEventListener("click", async function () {
-                utils.showLoad("正在清理中，请等待！")
-
-                const response = await utils.sendApi(urlConstants.CLASS_LIST, 'GET')
-                const data = response['data']
-
-                for (let i = 0; i < data.length; i++) {
-                    const instanceId = data[i]['id']
-                    for (let j = 0; j < data[i]['backlogDTOS'].length; j++) {
-                        const messageId = data[i]['backlogDTOS'][j]['id']
-                        const handle_clear_url = urlConstants.CLEAR_MSG.replace('{}', instanceId).replace('{}', messageId)
-                        // 清除消息功能
-                        const clearResponse = await utils.sendApi(handle_clear_url, 'PUT')
-                        if (clearResponse['code'] !== "1") {
-                            return utils.showError("未知错误，请联系开发者!")
-                        }
-
-                    }
-                }
-                Swal.close(); // 关闭加载提示
-                utils.showSuccess("清除成功，即将刷新页面！")
-
-            })
-        });
-    }
-
-    // 创建一键签到按钮
     function createSignButton() {
         let signButton = document.createElement('div');
         signButton.innerHTML = '<button class="el-button el-button--danger el-button--small" style="margin-left: 10px">一键签到</button>';
@@ -281,60 +245,6 @@
                     })
                 })
             }
-        }, 1000); // 每隔 1 秒检查一次
-
-    }
-
-    // 创建一键完成视频任务按钮
-    function createCompleteVideoButton() {
-        let completeVideoButton = document.createElement('div');
-        completeVideoButton.innerHTML = '<button class="el-button el-button--danger el-button--small" style="margin: 20px 0 0 20px">一键完成所有视频任务</button>';
-
-        let intervalId = setInterval(function () {
-            let videoBox = document.querySelectorAll('.study-container');
-            if (videoBox.length > 0) {
-                clearInterval(intervalId); // 停止定时器
-                console.log(videoBox)
-                if (videoBox[0].firstChild) {
-                    videoBox[0].insertBefore(completeVideoButton, videoBox[0].firstChild);
-                } else {
-                    videoBox[0].appendChild(completeVideoButton);
-                }
-
-                completeVideoButton.addEventListener("click", async function () {
-                    utils.showInfo("正在开发，请耐心等待！")
-                    // utils.showLoad("正在完成视频，请耐心等待...")
-                    // //获取当前url
-                    // let currentURL = window.location.href;
-                    // let parts = currentURL.split('/');
-                    // let courseId = parts[parts.length - 2];
-                    // const response = await utils.sendApi(urlConstants.VIDEO_LIST.replace("{}", courseId), 'GET')
-                    // const data = response['data']
-                    //
-                    // for (let i = 0; i < data.length; i++) {
-                    //     const instanceChapterId = data[i]['instanceChapterId']
-                    //     const instanceId = data[i]['instanceId']
-                    //     const resourceId = data[i]['resourceId']
-                    //     const sendBody = urlConstants.COMPLETE_VIDEO_BODY
-                    //     sendBody.instanceId = instanceId
-                    //     sendBody.instanceChapterId = instanceChapterId
-                    //     sendBody.resourceId = resourceId
-                    //
-                    //     // console.log(sendBody)
-                    //
-                    //     const clearResponse = await utils.sendApiWithBody(urlConstants.VIDEO_LIST.replace("{}", instanceId), 'POST', sendBody)
-                    //     if (clearResponse['code'] !== "1") {
-                    //         return utils.showError("未知错误，请联系开发者!")
-                    //     }
-                    //
-                    // }
-                    // Swal.close(); // 关闭加载提示
-                    // utils.showSuccess("清除成功，即将刷新页面！")
-
-                })
-            }
-
-
         }, 1000); // 每隔 1 秒检查一次
 
     }
@@ -515,44 +425,7 @@
         }, 1000); // 每隔 1 秒检查一次
     }
 
-    function createCompulsiveFinishWorkButton() {
-        let finishBtnDiv = document.createElement('div');
-        finishBtnDiv.className = 'finish-compulsive-div'
-        finishBtnDiv.innerHTML = '<button class="el-button el-button--danger el-button--small" style="margin-right: 10px; border: 1px solid rgb(243, 245, 248); ">强制答题</button>'
-
-        let btnBox = document.querySelectorAll('.list-bg > div');
-        let startBtn = btnBox[2].querySelector("button[disabled='disabled'][type='button']");
-
-        const isExistCompulsiveBtn = document.querySelector("div[class='finish-compulsive-div']")
-
-        utils.responseInterceptor('homework-submit-info').then((response) => {
-            console.log(response)
-            if (response['data']) {
-                const resData = response['data']
-                switch (resData['status']) {
-                    case 1:// 已提交
-                        startBtn.style.display = 'block'
-                        if (isExistCompulsiveBtn) {
-                            isExistCompulsiveBtn.remove()
-                        }
-                        break
-                    case 2: // 错过提交
-                        utils.setValue('homeworkId', resData['homeworkId'])
-                        if (startBtn && isExistCompulsiveBtn == null) {
-                            startBtn.style.display = 'none'
-                            btnBox[2].insertBefore(finishBtnDiv, btnBox[2].firstChild);
-                        }
-                        break
-                }
-            }
-        })
-
-        isExistCompulsiveBtn.addEventListener('click', function () {
-            console.log(utils.getValue('homeworkId'))
-        })
-
-    }
-
+    // 提前查看分数
     function createQueryScoreInfo() {
         let queryScoreButton = document.createElement('div');
 
@@ -582,37 +455,9 @@
 
     }
 
-    function modifyEndTime() {
-        // utils.modifyResponse('/work/do', 'endTime', 4102329600000)
-        XMLHttpRequest.prototype.open = function (method, url) {
-            console.log(url)
-            // alert(url.indexOf('/homework/homeworks/') !== -1)
-            // if (url.indexOf('/questions') !== -1) {
-            //     console.log(url)
-            //     // this.addEventListener('readystatechange', function () {
-            //     //     if (this.readyState === 4) {
-            //     //         alert(1)
-            //     //         // const modifiedQuotaResponse = modifyQuotaResponse(this.response)
-            //     //         // Object.defineProperty(this, "response", {
-            //     //         //     writable: true,
-            //     //         // });
-            //     //         // this.response = JSON.stringify(modifiedQuotaResponse)
-            //     //     }
-            //     // })
-            // }
-
-            originOpen.apply(this, arguments);
-        }
-    }
-
-    // modifyEndTime()
-
-
     let main = {
         init() {
             createSignButton()
-            createClearButton()
-            createCompleteVideoButton()
             createCompleteHomeWorkButton()
 
             const currentUrl = window.location.href
@@ -646,9 +491,6 @@
     })
 
     class urlConstants {
-        static CLASS_LIST = "https://api.zretc.net/instances/instances/stu/my-instance?pageSize=10&pageNum=1&instanceStatus&orderBy=1&orderByWay=DESC"
-        static CLEAR_MSG = "https://api.zretc.net/instances/instances/{}/backlog-message/stu/{}"
-
         // 签到列表
         static SIGN_LIST = "https://api.zretc.net/instances/instances/{}/sign/stu/page?signInName=&stuSignInType=&pageSize=20&pageNum=1"
         // 签到
@@ -660,37 +502,11 @@
             "remark": "", // 备注
             "stuSignInType": 1 // 签到状态 4=请假 2=迟到 1=签到成功 3=早退 0=未签到
         }
-
-        // 作业列表
-        static HOMEWORK_LIST = "https://api.zretc.net/instances/instances/{}/stu/homework-list"
-
         // 获取作业答案
         static HOMEWORK_DETAIL = "https://api.zretc.net/homework/homeworks/{}/detail-objective-list"
 
-        //作业提交
-        static HOMEWORK_SUBMIT = "https://online.zretc.net/api/homework/submits?submitType=1"
-
         // 获取studentId url
         static STUDENT_ID = "https://api.zretc.net/instances/instances/stu/my-progress/{}"
-
-        static VIDEO_LIST = "https://api.zretc.net/instances/instances/{}/student-study-record"
-        static COMPLETE_VIDEO_BODY = {
-            "status": 2,
-            "instanceChapterId": "1795336607034122241", //
-            "instanceId": "1760130398605942786", //
-            "resourceCategory": 1,
-            "resourceId": "1795336675761987585", //
-            "resourceLocation": 9999999,
-            "resourceTotal": 9999999
-        }
-
-        /**
-         * resourceCategory分类
-         * 附件 6
-         * 视频 1
-         * 作业 3
-         */
-
     }
 
 })();
