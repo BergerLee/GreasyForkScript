@@ -8,7 +8,7 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.1
+// @version     1.2
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
@@ -29,13 +29,21 @@
         if (homeTopAd_2) {
             homeTopAd_2.remove()
         }
+
+        const singleTopAd = document.querySelector('div[class="single-top-html"]');
+        if (singleTopAd) {
+            singleTopAd.remove()
+        }
     }
 
     function app_lnn_AD_special() {
-        const iframes = document.querySelector('iframe:not([src])');
-        if (iframes) {
-            iframes.style.setProperty('visibility', 'hidden', 'important');
-        }
+        // const iframes = document.querySelector('iframe:not([src])');
+        // console.log(iframes)
+        // if (iframes) {
+        //     iframes.style.setProperty('visibility', 'hidden', 'important');
+        // }
+
+        GM_addStyle('iframe:not([src]){visibility:hidden !important}');
     }
 
 
