@@ -4,12 +4,14 @@
 // @match       https://www.123pan.com/
 // @match       https://www.123pan.com/*
 // @grant       unsafeWindow
+// @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.0
+// @version     1.1
 // @license     MIT
 // @author      Berger
 // @description 去广告、修改会员[仅供娱乐使用]
 
+// @note         1.1 [新增]手机端去广告
 // @note         1.0 [新增]PC去广告 [新增]会员修改
 // ==/UserScript==
 
@@ -87,9 +89,19 @@
         }
 
 
+        // 移除手机端广告
+        function removeAdForMobile(){
+            GM_addStyle('.banner-container-h5{display:none !important}');//右侧登录提示栏
+        }
+
+
         let main = {
             init() {
-                removeAdForPC()
+                if (window.innerWidth <= 768) {
+                    removeAdForMobile()
+                } else {
+                    removeAdForPC()
+                }
                 responseInterceptors()
             },
         }
