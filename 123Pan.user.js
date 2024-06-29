@@ -6,11 +6,12 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.1
+// @version     1.2
 // @license     MIT
 // @author      Berger
 // @description 去广告、修改会员[仅供娱乐使用]
 
+// @note         1.2 [修复]一些已知的BUG
 // @note         1.1 [新增]手机端去广告
 // @note         1.0 [新增]PC去广告 [新增]会员修改
 // ==/UserScript==
@@ -66,6 +67,9 @@
             }
         }
 
+        responseInterceptors()
+
+
 
         // 移除电脑端广告
         function removeAdForPC() {
@@ -97,12 +101,8 @@
 
         let main = {
             init() {
-                if (window.innerWidth <= 768) {
-                    removeAdForMobile()
-                } else {
-                    removeAdForPC()
-                }
-                responseInterceptors()
+                removeAdForMobile()
+                removeAdForPC()
             },
         }
 
