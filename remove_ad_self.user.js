@@ -3,10 +3,12 @@
 // @namespace   http://tampermonkey.net/
 // @match       https://applnn.cc/
 // @match       https://applnn.cc/*
+// @match       https://www.applnn.cc/
+// @match       https://www.applnn.cc/*
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.0
+// @version     1.1
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
