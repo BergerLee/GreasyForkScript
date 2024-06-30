@@ -5,16 +5,30 @@
 // @match       https://applnn.cc/*
 // @match       https://www.applnn.cc/
 // @match       https://www.applnn.cc/*
+// @match       https://*.lanzout.com/
+// @match       https://*.lanzout.com/*
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.2
+// @version     1.3
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
 
 (function () {
     'use strict';
+
+    const url = window.location.href;
+
+    const utils = {
+        removeElementArrays(elementList){
+            if (elementList.length > 0) {
+                elementList.forEach(element => {
+                    element.remove()
+                })
+            }
+        }
+    }
 
     function app_lnn_AD_normal() {
         const noticeBoard = document.querySelector('div[id="gong-box"]');
@@ -34,28 +48,43 @@
         if (singleTopAd) {
             singleTopAd.remove()
         }
+
+        const essayBottomAd = document.querySelector('.single-bottom-html');
+        if (essayBottomAd) {
+            essayBottomAd.remove()
+        }
+
+        const downloadAd = document.querySelectorAll('div[class="n_banner_inner"]');
+        utils.removeElementArrays(downloadAd)
     }
 
     function app_lnn_AD_special() {
-        // const iframes = document.querySelector('iframe:not([src])');
-        // console.log(iframes)
-        // if (iframes) {
-        //     iframes.style.setProperty('visibility', 'hidden', 'important');
-        // }
-
         GM_addStyle('iframe:not([src]){visibility:hidden !important}');
+    }
+
+    function lan_z_out_AD_normal(){
+        const downloadAD = document.querySelectorAll('div[class="appad"]');
+        utils.removeElementArrays(downloadAD)
     }
 
 
     let main = {
         initNormal() {
-            app_lnn_AD_normal()
+            if (url.indexOf('applnn.cc') !== -1){
+                app_lnn_AD_normal()
+            }else if (url.indexOf('lanzout.com') !== -1){
+                lan_z_out_AD_normal()
+            }
         },
 
         initSpecial() {
-            app_lnn_AD_special()
+            if (url.indexOf('applnn.cc') !== -1){
+                app_lnn_AD_special()
+            }
         }
     }
+
+
 
     window.addEventListener('DOMContentLoaded', main.initNormal);
     window.addEventListener('load', main.initSpecial);
