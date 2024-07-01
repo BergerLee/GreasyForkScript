@@ -10,7 +10,7 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.3
+// @version     1.4
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
@@ -27,32 +27,29 @@
                     element.remove()
                 })
             }
+        },
+        removeElement(element){
+            if (element){
+                element.remove()
+            }
         }
     }
 
     function app_lnn_AD_normal() {
         const noticeBoard = document.querySelector('div[id="gong-box"]');
-        if (noticeBoard) {
-            noticeBoard.remove()
-        }
+        utils.removeElement(noticeBoard)
+
         const homeTopAd_1 = document.querySelector('div[id="home-row-dhsj"]');
-        if (homeTopAd_1) {
-            homeTopAd_1.remove()
-        }
+        utils.removeElement(homeTopAd_1)
+
         const homeTopAd_2 = document.querySelector('div[id="home-row-gd1"]');
-        if (homeTopAd_2) {
-            homeTopAd_2.remove()
-        }
+        utils.removeElement(homeTopAd_2)
 
         const singleTopAd = document.querySelector('div[class="single-top-html"]');
-        if (singleTopAd) {
-            singleTopAd.remove()
-        }
+        utils.removeElement(singleTopAd)
 
         const essayBottomAd = document.querySelector('.single-bottom-html');
-        if (essayBottomAd) {
-            essayBottomAd.remove()
-        }
+        utils.removeElement(essayBottomAd)
 
         const downloadAd = document.querySelectorAll('div[class="n_banner_inner"]');
         utils.removeElementArrays(downloadAd)
@@ -65,6 +62,10 @@
     function lan_z_out_AD_normal(){
         const downloadAD = document.querySelectorAll('div[class="appad"]');
         utils.removeElementArrays(downloadAD)
+
+        const downloadBottomAd = document.querySelectorAll('div:not([class]):not([id])');
+        utils.removeElementArrays(downloadBottomAd)
+        console.log(downloadBottomAd)
     }
 
 
@@ -83,8 +84,6 @@
             }
         }
     }
-
-
 
     window.addEventListener('DOMContentLoaded', main.initNormal);
     window.addEventListener('load', main.initSpecial);
