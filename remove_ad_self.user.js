@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        自用去广告插件
+// @name        自用小工具
 // @namespace   http://tampermonkey.net/
 // @match       https://applnn.cc/
 // @match       https://applnn.cc/*
@@ -11,7 +11,7 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.5
+// @version     1.6
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
@@ -22,17 +22,56 @@
     const url = window.location.href;
 
     const utils = {
-        removeElementArrays(elementList){
+        removeElementArrays(elementList) {
             if (elementList.length > 0) {
                 elementList.forEach(element => {
                     element.remove()
                 })
             }
         },
-        removeElement(element){
-            if (element){
+
+        removeElement(element) {
+            if (element) {
                 element.remove()
             }
+        },
+
+        responseInterceptors(fetchUrl, handleFunction) {
+            const originOpen = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function (method, url) {
+                if (url.indexOf(fetchUrl) !== -1) {
+                    this.addEventListener('readystatechange', function () {
+                        if (this.readyState === 4) {
+                            const response = JSON.parse(this.responseText)
+                            const modifiedResponse = handleFunction(response)
+                            Object.defineProperty(this, "responseText", {
+                                writable: true,
+                            });
+                            this.responseText = JSON.stringify(modifiedResponse)
+                        }
+                    })
+                }
+
+
+                originOpen.apply(this, arguments);
+            }
+        }
+    }
+
+    const handleResponse = {
+        handleUserInfoResponse(userInfoResponse) {
+            console.log(userInfoResponse['data'])
+            userInfoResponse['data']['vip_level'] = 13
+            userInfoResponse['data']['member_days'] = 3650
+            userInfoResponse['data']['member_valid_days'] = 3650
+            userInfoResponse['data']['member_status'] = 1
+            userInfoResponse['data']['end_time'] = '2035-12-31'
+            return userInfoResponse
+        },
+
+        handleInitResponse(initResponse) {
+            initResponse['data']['website_data']['app_show'] = '0'
+            return initResponse
         }
     }
 
@@ -60,7 +99,7 @@
         GM_addStyle('iframe:not([src]){visibility:hidden !important}');
     }
 
-    function lan_z_out_AD_normal(){
+    function lan_z_out_AD_normal() {
         const downloadAD = document.querySelectorAll('div[class="appad"]');
         utils.removeElementArrays(downloadAD)
 
@@ -70,12 +109,12 @@
     }
 
     // 提前下载游戏
-    function nw_game_previous_download(){
-        const observer = new MutationObserver(function(mutationsList, observer) {
+    function nw_game_previous_download() {
+        const observer = new MutationObserver(function (mutationsList, observer) {
             const download_box = document.querySelector('.three_btn_box');
             if (download_box) {
-                if (download_box.children.length === 0){
-                    download_box.innerHTML=
+                if (download_box.children.length === 0) {
+                    download_box.innerHTML =
                         `
                         <uni-view data-v-6267e90e="" class="three_btn_box__item down" style="background: rgb(1, 143, 255);">
                         <uni-view>提前下载（插件）</uni-view>
@@ -85,7 +124,7 @@
 
                 const downloadButton = download_box.querySelector('.three_btn_box__item.down');
                 if (downloadButton) {
-                    downloadButton.addEventListener('click', function() {
+                    downloadButton.addEventListener('click', function () {
                         const idMatch = url.match(/[?&]id=([0-9]+)/)
                         if (idMatch && idMatch[1]) {
                             window.location.href = `https://oss.775sy.com/android/game_package${idMatch[1]}.apk`
@@ -99,44 +138,51 @@
             }
         });
 
-        observer.observe(document.body, { childList: true, subtree: true });
+        observer.observe(document.body, {childList: true, subtree: true});
     }
 
-    function nw_game_ad_normal(){
-        const observer = new MutationObserver(function(mutationsList, observer) {
+    function nw_game_ad_normal() {
+        const observer = new MutationObserver(function (mutationsList, observer) {
             const tabbarItemArrays = document.querySelectorAll('.u-tabbar__content__item-wrapper > .u-tabbar-item');
+
+            const accountTran = document.querySelector('.accountTran');
+            utils.removeElement(accountTran)
 
             if (tabbarItemArrays.length > 0) {
                 utils.removeElement(tabbarItemArrays[2])
                 utils.removeElement(tabbarItemArrays[3])
                 observer.disconnect();
             }
-
-
         });
 
-        observer.observe(document.body, { childList: true, subtree: true });
+        observer.observe(document.body, {childList: true, subtree: true});
     }
 
     let main = {
         initNormal() {
-            if (url.indexOf('applnn.cc') !== -1){
+            if (url.indexOf('applnn.cc') !== -1) {
                 app_lnn_AD_normal()
-            }else if (url.indexOf('lanzout.com') !== -1){
+            } else if (url.indexOf('lanzout.com') !== -1) {
                 lan_z_out_AD_normal()
-            }else if (url.indexOf('775sy.com') !== -1){
+            } else if (url.indexOf('775sy.com') !== -1) {
                 nw_game_previous_download()
                 nw_game_ad_normal()
             }
         },
 
         initSpecial() {
-            if (url.indexOf('applnn.cc') !== -1){
+            if (url.indexOf('applnn.cc') !== -1) {
                 app_lnn_AD_special()
             }
+        },
+
+        responseInterceptor() {
+            utils.responseInterceptors('/userinfo', handleResponse.handleUserInfoResponse)
+            utils.responseInterceptors('/index/init', handleResponse.handleInitResponse)
         }
     }
 
+    main.responseInterceptor()
     window.addEventListener('DOMContentLoaded', main.initNormal);
     window.addEventListener('load', main.initSpecial);
 })();
