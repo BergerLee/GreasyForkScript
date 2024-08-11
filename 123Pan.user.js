@@ -6,11 +6,12 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.2
+// @version     1.3
 // @license     MIT
 // @author      Berger
 // @description 去广告、修改会员[仅供娱乐使用]
 
+// @note         1.3 [新增]文件列表默认修改为更新时间降序排序
 // @note         1.2 [修复]一些已知的BUG
 // @note         1.1 [新增]手机端去广告
 // @note         1.0 [新增]PC去广告 [新增]会员修改
@@ -24,6 +25,8 @@
         };
 
         const originOpen = XMLHttpRequest.prototype.open;
+        const originalSend = XMLHttpRequest.prototype.send;
+
         store.path = new URLSearchParams(new URL(location.href).search).get('path');
 
         function modifyUserInfoResponse(originalResponse) {
@@ -67,8 +70,40 @@
             }
         }
 
-        responseInterceptors()
+        // 修改获取分享文件默认为更新时间倒序排序
+        function requestInterceptors() {
+            // 重写 open 方法
+            XMLHttpRequest.prototype.open = function (method, url, async, user, password) {
+                this._url = url;  // 保存请求的 URL
+                this._method = method;  // 保存请求方法
 
+                // 检查是否为目标 API 请求
+                if (url.includes('/b/api/share/get')) {
+                    console.log('Original URL:', url);
+
+                    // 检查 orderBy 是否已经是 create_at
+                    if (!url.includes('orderBy=create_at') && !url.includes('orderDirection=desc')) {
+                        // 修改 orderBy 和 orderDirection 参数
+                        this._url = url.replace('orderBy=file_name', 'orderBy=create_at')
+                            .replace('orderDirection=asc', 'orderDirection=desc');  // 按更新时间升序排序
+                        console.log('Modified URL:', this._url);
+                    }
+
+                }
+
+                // 调用原始 open 方法
+                originOpen.call(this, method, this._url, async, user, password);
+            };
+
+            // send 方法保持不变
+            XMLHttpRequest.prototype.send = function (body) {
+                originalSend.call(this, body);
+            };
+        }
+
+
+        responseInterceptors()
+        requestInterceptors()
 
 
         // 移除电脑端广告
@@ -94,7 +129,7 @@
 
 
         // 移除手机端广告
-        function removeAdForMobile(){
+        function removeAdForMobile() {
             GM_addStyle('.banner-container-h5{display:none !important}');//右侧登录提示栏
         }
 
