@@ -11,7 +11,7 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.4
+// @version     1.5
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
