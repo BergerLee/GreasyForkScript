@@ -6,7 +6,7 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.3
+// @version     1.4
 // @license     MIT
 // @author      Berger
 // @description 去广告、修改会员[仅供娱乐使用]
