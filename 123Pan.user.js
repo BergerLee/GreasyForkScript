@@ -11,6 +11,7 @@
 // @author      Berger
 // @description 去广告、修改会员[仅供娱乐使用]
 
+// @note         1.4 [修复]一些已知的BUG
 // @note         1.3 [新增]文件列表默认修改为更新时间降序排序
 // @note         1.2 [修复]一些已知的BUG
 // @note         1.1 [新增]手机端去广告
@@ -24,15 +25,12 @@
             modifiedUserInfo: null, path: null,
         };
 
-        const originOpen = XMLHttpRequest.prototype.open;
-        const originalSend = XMLHttpRequest.prototype.send;
-
         store.path = new URLSearchParams(new URL(location.href).search).get('path');
 
         function modifyUserInfoResponse(originalResponse) {
             try {
                 const modifiedUserInfoResponse = originalResponse
-                modifiedUserInfoResponse.data.SpacePermanent = 500 * 1024 * 1024 * 1024 //总容量
+                modifiedUserInfoResponse.data.SpacePermanent = 5 * 1024 * 1024 * 1024 * 1024 //总容量
                 modifiedUserInfoResponse.data.SpaceTempExpr = "2099-01-01T00:00:00+00:00" //容量过期时间
                 modifiedUserInfoResponse.data.Vip = true // 是否为VIP
                 modifiedUserInfoResponse.data.VipLevel = 2 // VIP等级
@@ -50,60 +48,50 @@
             }
         }
 
-        function responseInterceptors() {
-            XMLHttpRequest.prototype.open = function (method, url) {
-                if (url.indexOf('/info') !== -1) {
-                    this.addEventListener('readystatechange', function () {
-                        if (this.readyState === 4) {
-                            const res = JSON.parse(this.responseText)
-                            const modifiedUserInfoResponse = modifyUserInfoResponse(res)
-                            Object.defineProperty(this, "responseText", {
-                                writable: true,
-                            });
-                            this.responseText = modifiedUserInfoResponse
-                        }
-                    })
-                }
 
+        function applyInterceptors() {
+            const originOpen = XMLHttpRequest.prototype.open;
+            const originalSend = XMLHttpRequest.prototype.send;
 
-                originOpen.apply(this, arguments);
-            }
-        }
-
-        // 修改获取分享文件默认为更新时间倒序排序
-        function requestInterceptors() {
-            // 重写 open 方法
             XMLHttpRequest.prototype.open = function (method, url, async, user, password) {
-                this._url = url;  // 保存请求的 URL
-                this._method = method;  // 保存请求方法
+                this._url = url;
+                this._method = method;
 
-                // 检查是否为目标 API 请求
+                // 检查并修改 /b/api/share/get 请求的 orderBy 和 orderDirection 参数
                 if (url.includes('/b/api/share/get')) {
                     console.log('Original URL:', url);
 
-                    // 检查 orderBy 是否已经是 create_at
                     if (!url.includes('orderBy=create_at') && !url.includes('orderDirection=desc')) {
-                        // 修改 orderBy 和 orderDirection 参数
                         this._url = url.replace('orderBy=file_name', 'orderBy=create_at')
-                            .replace('orderDirection=asc', 'orderDirection=desc');  // 按更新时间升序排序
+                            .replace('orderDirection=asc', 'orderDirection=desc');
                         console.log('Modified URL:', this._url);
                     }
-
                 }
 
-                // 调用原始 open 方法
+                // 监听 /info 请求的响应
+                if (url.indexOf('/info') !== -1) {
+                    this.addEventListener('readystatechange', function () {
+                        if (this.readyState === 4) {
+                            const res = JSON.parse(this.responseText);
+                            const modifiedUserInfoResponse = modifyUserInfoResponse(res);
+                            Object.defineProperty(this, "responseText", {
+                                writable: true,
+                            });
+                            this.responseText = modifiedUserInfoResponse;
+                        }
+                    });
+                }
+
                 originOpen.call(this, method, this._url, async, user, password);
             };
 
-            // send 方法保持不变
             XMLHttpRequest.prototype.send = function (body) {
                 originalSend.call(this, body);
             };
         }
 
 
-        responseInterceptors()
-        requestInterceptors()
+        applyInterceptors()
 
 
         // 移除电脑端广告
