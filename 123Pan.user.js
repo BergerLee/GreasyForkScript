@@ -6,11 +6,12 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.4
+// @version     1.5
 // @license     MIT
 // @author      Berger
 // @description 去广告、修改会员[仅供娱乐使用]
 
+// @note         1.5 [修复]无法上传文件的BUG
 // @note         1.4 [修复]一些已知的BUG
 // @note         1.3 [新增]文件列表默认修改为更新时间降序排序
 // @note         1.2 [修复]一些已知的BUG
@@ -24,6 +25,14 @@
         const store = {
             modifiedUserInfo: null, path: null,
         };
+
+        const utils = {
+            removeElement(element) {
+                if (element){
+                    element.remove()
+                }
+            }
+        }
 
         store.path = new URLSearchParams(new URL(location.href).search).get('path');
 
@@ -47,7 +56,6 @@
                 return originalResponse // 返回原始响应内容
             }
         }
-
 
         function applyInterceptors() {
             const originOpen = XMLHttpRequest.prototype.open;
@@ -98,21 +106,46 @@
         function removeAdForPC() {
             // 顶部广告
             const topAD = document.querySelector('div[class="mfy-main-layout__head"]')
-            topAD.remove()
+            utils.removeElement(topAD)
 
             // 右下角广告
-            const rightBottomAD = document.querySelectorAll('.layout-dom > div:not([class])')
-            rightBottomAD.forEach(divADItem => {
-                divADItem.remove()
-            })
+            const rightBottomAD = document.querySelector('div[class="activity-box"]')
+            const activityParent = rightBottomAD.closest('div')
+            utils.removeElement(activityParent)
 
             //产品商城
             const asideAD = document.querySelector('div[class="sider-member-btn"]')
-            asideAD.remove()
+            utils.removeElement(asideAD)
 
             // 其他网盘转入
             const specialAD = document.querySelector('div[class="special-menu-item-container"]')
-            specialAD.remove()
+            utils.removeElement(specialAD)
+
+        }
+
+        function removeUploadAD() {
+            const targetNode = document.querySelector('div[class="layout-dom"]');
+            if (!targetNode) {
+                return; // 如果未找到目标节点，则提前退出
+            }
+            const config = { childList: true, subtree: true }; // 添加 subtree 选项，以监听子节点的变动
+
+            const observer = new MutationObserver((mutationsList, observer) => {
+                for (const mutation of mutationsList) {
+                    for (const node of mutation.addedNodes) {
+                        if (node.nodeType === 1 && node.classList.contains('upbody')) {
+                            const uploadAD = node.querySelector('div.uppy-Dashboard-slowSpeed-banner')
+                            if (uploadAD){
+                                uploadAD.remove()
+                            }
+                            observer.disconnect(); // 找到目标节点后断开观察器
+                            return; // 退出循环以避免多次触发
+                        }
+                    }
+                }
+            });
+
+            observer.observe(targetNode, config);
         }
 
 
@@ -126,6 +159,7 @@
             init() {
                 removeAdForMobile()
                 removeAdForPC()
+                removeUploadAD()
             },
         }
 
