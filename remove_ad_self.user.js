@@ -8,10 +8,11 @@
 // @match       https://*.lanzout.com/
 // @match       https://*.lanzout.com/*
 // @match       https://m.775sy.com/*
+// @match       https://www.775sy.com/*
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.6
+// @version     1.7
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
@@ -43,6 +44,7 @@
                     this.addEventListener('readystatechange', function () {
                         if (this.readyState === 4) {
                             const response = JSON.parse(this.responseText)
+                            console.log(response)
                             const modifiedResponse = handleFunction(response)
                             Object.defineProperty(this, "responseText", {
                                 writable: true,
@@ -72,6 +74,15 @@
         handleInitResponse(initResponse) {
             initResponse['data']['website_data']['app_show'] = '0'
             return initResponse
+        },
+
+        handle775syUserStatusResponse(response){
+            response['vip_level'] = 12
+            response['balance'] = "10000000.00"
+            response['point'] = 10000000
+            response['wealcoin'] = "10000000"
+            response['bind_balance'] = "10000000"
+            return response
         }
     }
 
@@ -125,9 +136,11 @@
                 const downloadButton = download_box.querySelector('.three_btn_box__item.down');
                 if (downloadButton) {
                     downloadButton.addEventListener('click', function () {
+                        const gameId = new URLSearchParams(new URL(window.location.hash).search).get('id');
+                        console.log(gameId)
                         const idMatch = url.match(/[?&]id=([0-9]+)/)
                         if (idMatch && idMatch[1]) {
-                            window.location.href = `https://oss.775sy.com/android/game_package${idMatch[1]}.apk`
+                            // window.location.href = `https://oss.775sy.com/android/game_package${idMatch[1]}.apk`
                         } else {
                             console.log('未找到 id 参数');
                             return null;
@@ -179,6 +192,7 @@
         responseInterceptor() {
             utils.responseInterceptors('/userinfo', handleResponse.handleUserInfoResponse)
             utils.responseInterceptors('/index/init', handleResponse.handleInitResponse)
+            utils.responseInterceptors('/sdkh5/game/get_user_info', handleResponse.handle775syUserStatusResponse)
         }
     }
 
