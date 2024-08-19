@@ -12,7 +12,7 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.8
+// @version     1.81
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
@@ -126,14 +126,15 @@
                 const downloadButton = download_box.querySelector('.three_btn_box__item.down');
                 if (downloadButton) {
                     downloadButton.addEventListener('click', function () {
-                        const gameId = new URLSearchParams(new URL(window.location.hash).search).get('id');
-                        console.log(gameId)
-                        const idMatch = url.match(/[?&]id=([0-9]+)/)
-                        if (idMatch && idMatch[1]) {
-                            // window.location.href = `https://oss.775sy.com/android/game_package${idMatch[1]}.apk`
+                        const hash = window.location.hash;
+                        const queryString = hash.split('?')[1]; // 仅获取 ? 后的部分
+                        const params = new URLSearchParams(queryString);
+                        const gameId = params.get('id');
+                        if (gameId) {
+                            window.location.href = `https://oss.775sy.com/android/game_package${gameId}.apk`
                         } else {
                             console.log('未找到 id 参数');
-                            return null;
+                            return null
                         }
                     });
                 }
