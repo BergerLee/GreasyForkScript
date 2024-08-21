@@ -9,10 +9,11 @@
 // @match       https://*.lanzout.com/*
 // @match       https://m.775sy.com/*
 // @match       https://www.775sy.com/*
+// @match       https://mobapp.277sy.com/*
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.81
+// @version     1.91
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
@@ -56,6 +57,30 @@
 
                 originOpen.apply(this, arguments);
             }
+        },
+
+        checkElement(className, callback) {
+            const observer = new MutationObserver(function (mutationsList, observer) {
+                const element = document.querySelector(className);
+                if (element) {
+                    observer.disconnect();
+                    callback(element)
+                }
+            });
+
+            observer.observe(document.body, {childList: true, subtree: true});
+        },
+
+        checkElementDIY(className, parentElement, callback) {
+            const observer = new MutationObserver(function (mutationsList, observer) {
+                const element = parentElement.querySelector(className);
+                if (element) {
+                    observer.disconnect();
+                    callback(element)
+                }
+            });
+
+            observer.observe(document.body, {childList: true, subtree: true});
         }
     }
 
@@ -136,7 +161,7 @@
                             console.log('未找到 id 参数');
                             return null
                         }
-                    });
+                    });//https://bhres.39bh.com/android/game_package18486.apk
                 }
                 observer.disconnect();
             }
@@ -162,6 +187,73 @@
         observer.observe(document.body, {childList: true, subtree: true});
     }
 
+    class game277sy {
+        static removeAD() {
+            if (url.indexOf('home') !== -1) {
+                utils.checkElement('.home', function (element) {
+                    // 首页弹窗
+                    utils.removeElement(element.children[5])
+
+                    // 客服悬浮图标
+                    utils.removeElement(element.querySelector('div[class="icons-container"]'))
+
+                    // 首页多余信息
+                    const swipeContent = element.querySelector('.content_scroll')
+                    utils.removeElement(swipeContent.children[5])
+                    utils.removeElement(swipeContent.children[4])
+                    utils.checkElementDIY('.introduction', swipeContent, function (element) {
+                        utils.removeElement(element)
+                    })
+                    utils.checkElementDIY('.notice-swipe', swipeContent, function (element) {
+                        utils.removeElement(element.parentElement)
+                    })
+
+                    swipeContent.lastChild.style.height = '100px'
+                    utils.removeElement(element.querySelector('.toDesktop'))
+                })
+            }
+
+            // 除去底部Tab
+            utils.removeElement(document.querySelector('.tab-bar').children[3])
+        }
+
+        static androidDownload() {
+            const downloadBtnCSS = {
+                position: 'absolute',
+                right: '0',
+                width: '145px',
+                height: '82px',
+                background: '#5879fe',
+                borderRadius: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }
+            if (url.indexOf('gameinfo') !== -1) {
+                utils.checkElement('.bottom-bar', function (element) {
+                    const downloadNormalBtnDiv = element.querySelector('.enterprise_cloud_game')
+                    utils.removeElement(downloadNormalBtnDiv.children[2])
+                    const enterpriseRightDiv = document.createElement('div')
+                    enterpriseRightDiv.className = 'enterprise_right'
+                    Object.assign(enterpriseRightDiv.style, downloadBtnCSS);
+                    enterpriseRightDiv.innerHTML = `<div data-v-8de7bd1e="" class="enterprise-right"><span data-v-8de7bd1e="">安卓下载</span></div>`
+                    downloadNormalBtnDiv.appendChild(enterpriseRightDiv)
+                    downloadNormalBtnDiv.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        const urlObject = new URL(url);
+                        const match = urlObject.hash.match(/gameid\/(\d+)/);
+                        if (match) {
+                            const gameId = match[1];
+                            window.location.href = `https://download.277sy.com/index.php/Index/down/?gameid=${gameId}`
+                        }
+                    })
+                })
+            }
+        }
+    }
+
+
     let main = {
         initNormal() {
             if (url.indexOf('applnn.cc') !== -1) {
@@ -171,6 +263,10 @@
             } else if (url.indexOf('775sy.com') !== -1) {
                 nw_game_previous_download()
                 nw_game_ad_normal()
+                main.responseInterceptor()
+            } else if (url.indexOf('277sy.com') !== -1) {
+                game277sy.removeAD()
+                game277sy.androidDownload()
             }
         },
 
@@ -186,7 +282,6 @@
         }
     }
 
-    main.responseInterceptor()
     window.addEventListener('DOMContentLoaded', main.initNormal);
     window.addEventListener('load', main.initSpecial);
 })();
