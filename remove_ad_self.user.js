@@ -9,7 +9,7 @@
 // @match       https://*.lanzout.com/*
 // @match       https://m.775sy.com/*
 // @match       https://www.775sy.com/*
-// @match       http://mobapp.277sy.com/*
+// @match       https://mobapp.277sy.com/*
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
