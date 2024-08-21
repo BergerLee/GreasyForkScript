@@ -218,7 +218,7 @@
         }
 
         static androidDownload() {
-            const downloadBtnCSS = {
+            const enterpriseCSS = {
                 position: 'absolute',
                 right: '0',
                 width: '145px',
@@ -229,25 +229,55 @@
                 alignItems: 'center',
                 justifyContent: 'center'
             }
+
+            const enterpriseVisaCSS = {
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '280px',
+                height: '82px',
+                backgroundImage: 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAR8AAABSCAMAAABaOCB5AAAAkFBMVEUAAAAojf8ojf8njf8ojf8ojf8njf8pjf8wmP8ojf8ojv8ojf8qjf8ojf8nj/8ojf8pjv8ojf8ojf8njf8njf8njP8pi/8li/8ojf8ojf8njf8ojf8ojf8ojf8ojf8njf8njf8ojf8ojv8ojf8ojP8ojf8ojv8mjv8njv8ojv8njf8njf8dif8ojf8ojP8ojf/I7OyHAAAAL3RSTlMA+/Pu6dJ6GArdvkYO1gZNEuJyY1VAJByfkoqDH/fKw7ayrJ2Wa1oson46NAimXLmxgaEAAAIjSURBVHja7dzZcuJADAVQ2XjFYMxiNpMZss1ASEb//3fzkCdXBdHdtJNqSecTujAuXd8W+HV4/UhHGIA4mY6fs9kGvtNsjKEpt6sJfI92ikGKHlc1DK54xnAlXQ7D2qQYtIddDgM6lBi6OCtgKJPAfz2fyhaGMfmNPOzeYQD5L+QiXYN3m0Df618aVeDZeo6cREvw6m+CzCzAo7cgpq0fO6AqRoaW4MkqQo6iFrxY8jwexNEaPFggW2kBd+uQsRe41w5Zq+A+J+StLOAO9SNydwZ3k/CCZmtxDq4aPgM7YQ+OchZp2E1xIzZLNdO5Dey88gzCqAZ7F4YD+zV/wFrLcmC/4gi2Zg8oSNSAnX9cB3Y/D9grCnMCGxlKMwcLe5RnA8ZC7mc4m4Gh+gklysBMcUSRtsIKCLbGOrCTpmDgwKmAYCeRV0CwEkssINgQWUCwILOAYCzWPIOUaJ5BmmqeQRprnkHaap7hOp++oLqeb9QfqK7nY+/8+xkm5oL7GSZOkvsZzt93crl5Rl/UiO5n3HSU3c9werwuouOem/2WVnbc09Np3EOJGyn3Tdzs5dw3cRHnGvdQzhr3UMpC4x5KpXGPzf2mLare/Tht9xBGa233EKKqfzyahvUttfxEWejxUBaapVrsJzmjovbb6H8zvR9J8zB6vxYqcj+bxs30fj+dLOj9kG+oMOlyiVtq/OynrcTeHjDdb3zJntJEVjZvuh/7PxbtUN3rEH3rAAAAAElFTkSuQmCC)',
+                backgroundSize: '100% 100%'
+            }
             if (url.indexOf('gameinfo') !== -1) {
                 utils.checkElement('.bottom-bar', function (element) {
                     const downloadNormalBtnDiv = element.querySelector('.enterprise_cloud_game')
-                    utils.removeElement(downloadNormalBtnDiv.children[2])
-                    const enterpriseRightDiv = document.createElement('div')
-                    enterpriseRightDiv.className = 'enterprise_right'
-                    Object.assign(enterpriseRightDiv.style, downloadBtnCSS);
-                    enterpriseRightDiv.innerHTML = `<div data-v-8de7bd1e="" class="enterprise-right"><span data-v-8de7bd1e="">安卓下载</span></div>`
-                    downloadNormalBtnDiv.appendChild(enterpriseRightDiv)
-                    downloadNormalBtnDiv.addEventListener('click', function (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        const urlObject = new URL(url);
-                        const match = urlObject.hash.match(/gameid\/(\d+)/);
-                        if (match) {
-                            const gameId = match[1];
-                            window.location.href = `https://download.277sy.com/index.php/Index/down/?gameid=${gameId}`
-                        }
-                    })
+                    if (downloadNormalBtnDiv) {
+                        utils.removeElement(downloadNormalBtnDiv.children[2])
+                        const enterpriseRightDiv = document.createElement('div')
+                        enterpriseRightDiv.className = 'enterprise_right'
+                        Object.assign(enterpriseRightDiv.style, enterpriseCSS);
+                        enterpriseRightDiv.innerHTML = `<div data-v-8de7bd1e="" class="enterprise-right"><span data-v-8de7bd1e="">安卓下载</span></div>`
+                        downloadNormalBtnDiv.appendChild(enterpriseRightDiv)
+                        downloadNormalBtnDiv.addEventListener('click', function (event) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            const urlObject = new URL(url);
+                            const match = urlObject.hash.match(/gameid\/(\d+)/);
+                            if (match) {
+                                const gameId = match[1];
+                                window.location.href = `https://download.277sy.com/index.php/Index/down/?gameid=${gameId}`
+                            }
+                        })
+                    } else {
+                        const downloadNormalBtnDiv = element.querySelector('.enterprise_visa')
+                        utils.removeElement(downloadNormalBtnDiv.children[1])
+                        const enterpriseVisaRightDiv = document.createElement('div')
+                        enterpriseVisaRightDiv.className = 'enterprise_visa_right'
+                        Object.assign(enterpriseVisaRightDiv.style, enterpriseVisaCSS);
+                        enterpriseVisaRightDiv.innerHTML = `<div data-v-8de7bd1e="" class="enterprise_visa-right"><span data-v-8de7bd1e="">安卓下载(插件)</span></div>`
+                        downloadNormalBtnDiv.appendChild(enterpriseVisaRightDiv)
+                        downloadNormalBtnDiv.addEventListener('click', function (event) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            const urlObject = new URL(url);
+                            const match = urlObject.hash.match(/gameid\/(\d+)/);
+                            if (match) {
+                                const gameId = match[1];
+                                window.location.href = `https://download.277sy.com/index.php/Index/down/?gameid=${gameId}`
+                            }
+                        })
+                    }
                 })
             }
         }
