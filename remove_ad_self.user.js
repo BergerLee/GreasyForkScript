@@ -13,7 +13,7 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.91
+// @version     1.92
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
@@ -187,8 +187,8 @@
         observer.observe(document.body, {childList: true, subtree: true});
     }
 
-    class game277sy {
-        static removeAD() {
+    const game277sy = {
+        removeAD() {
             if (url.indexOf('home') !== -1) {
                 utils.checkElement('.home', function (element) {
                     // 首页弹窗
@@ -215,9 +215,9 @@
 
             // 除去底部Tab
             utils.removeElement(document.querySelector('.tab-bar').children[3])
-        }
+        },
 
-        static androidDownload() {
+        androidDownload() {
             const enterpriseCSS = {
                 position: 'absolute',
                 right: '0',
@@ -282,7 +282,6 @@
             }
         }
     }
-
 
     let main = {
         initNormal() {
