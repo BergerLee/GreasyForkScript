@@ -9,11 +9,11 @@
 // @match       https://*.lanzout.com/*
 // @match       https://m.775sy.com/*
 // @match       https://www.775sy.com/*
-// @match       https://mobapp.277sy.com/*
+// @match       http://mobapp.277sy.com/*
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.92
+// @version     1.93
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
@@ -187,8 +187,8 @@
         observer.observe(document.body, {childList: true, subtree: true});
     }
 
-    const game277sy = {
-        removeAD() {
+    class game277sy {
+        static removeAD() {
             if (url.indexOf('home') !== -1) {
                 utils.checkElement('.home', function (element) {
                     // 首页弹窗
@@ -215,9 +215,9 @@
 
             // 除去底部Tab
             utils.removeElement(document.querySelector('.tab-bar').children[3])
-        },
+        }
 
-        androidDownload() {
+        static androidDownload() {
             const enterpriseCSS = {
                 position: 'absolute',
                 right: '0',
@@ -282,6 +282,7 @@
             }
         }
     }
+
 
     let main = {
         initNormal() {
