@@ -7,10 +7,11 @@
 // @match       https://www.applnn.cc/*
 // @match       https://*.lanzout.com/
 // @match       https://*.lanzout.com/*
+// @match       https://www.aliyundrive.com/*
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.94
+// @version     1.95
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
@@ -117,6 +118,36 @@
         console.log(downloadBottomAd)
     }
 
+    function get_aliDrive_refresh_token() {
+        utils.checkElement('.nav-tab-content--9YjBf', function (leftNavDiv) {
+            const tokenBtn = document.createElement('div')
+            tokenBtn.className = 'nav-tab-item--WhAQf'
+            tokenBtn.innerHTML =
+                `
+                <span class="nav-tab-item-icon--Yz81j"><span data-role="icon" data-render-as="svg" data-icon-type="PDSRecord1" class="icon--D3kMk "><svg viewBox="0 0 1024 1024"><use xlink:href="#PDSRecord1"></use></svg></span></span>
+                <span class="nav-tab-item-name--eOuOe tipsText">复制Token</span>
+                `
+            leftNavDiv.appendChild(tokenBtn)
+
+            tokenBtn.addEventListener('click', function () {
+                const refreshToken = JSON.parse(localStorage.getItem('token'))['refresh_token']
+                if (refreshToken) {
+                    navigator.clipboard.writeText(refreshToken).then(() => {
+                        const statusSpan = tokenBtn.querySelector('.tipsText');
+                        statusSpan.textContent = '复制成功√';
+                        setTimeout(() => {
+                            statusSpan.textContent = '复制Token';
+                        }, 2000);
+                    })
+                } else {
+                    alert('获取失败！')
+                }
+
+            })
+        })
+
+    }
+
 
     let main = {
         initNormal() {
@@ -124,6 +155,8 @@
                 app_lnn_AD_normal()
             } else if (url.indexOf('lanzout.com') !== -1) {
                 lan_z_out_AD_normal()
+            } else if (url.indexOf('aliyundrive.com') !== -1) {
+                get_aliDrive_refresh_token()
             }
         },
 
