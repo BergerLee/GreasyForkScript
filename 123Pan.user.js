@@ -1,16 +1,17 @@
 // ==UserScript==
 // @name        123Pan去广告
 // @namespace   http://tampermonkey.net/
-// @match       https://www.123pan.com/
 // @match       https://www.123pan.com/*
+// @match       https://www.123pan.cn/*
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.5
+// @version     1.6
 // @license     MIT
 // @author      Berger
 // @description 去广告、修改会员[仅供娱乐使用]
 
+// @note         1.6 [适配]123Pan cn域名
 // @note         1.5 [修复]无法上传文件的BUG
 // @note         1.4 [修复]一些已知的BUG
 // @note         1.3 [新增]文件列表默认修改为更新时间降序排序
