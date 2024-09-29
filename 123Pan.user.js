@@ -6,11 +6,14 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.6
+// @version     1.7
 // @license     MIT
 // @author      Berger
-// @description 去广告、修改会员[仅供娱乐使用]
+// @require     https://registry.npmmirror.com/sweetalert2/10.16.6/files/dist/sweetalert2.min.js
+// @description 去广告、适配网页1G下载、修改会员[仅供娱乐使用]
 
+
+// @note         1.7 [新增]适配网页下载
 // @note         1.6 [适配]123Pan cn域名
 // @note         1.5 [修复]无法上传文件的BUG
 // @note         1.4 [修复]一些已知的BUG
@@ -23,13 +26,14 @@
 
 (function () {
         'use strict';
+
         const store = {
             modifiedUserInfo: null, path: null,
         };
 
         const utils = {
             removeElement(element) {
-                if (element){
+                if (element) {
                     element.remove()
                 }
             }
@@ -61,6 +65,7 @@
         function applyInterceptors() {
             const originOpen = XMLHttpRequest.prototype.open;
             const originalSend = XMLHttpRequest.prototype.send;
+            const originalRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
 
             XMLHttpRequest.prototype.open = function (method, url, async, user, password) {
                 this._url = url;
@@ -94,11 +99,28 @@
                 originOpen.call(this, method, this._url, async, user, password);
             };
 
+            XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
+                if (this._url.includes('/b/api/share/download/info')) {
+                    let headers = {
+                        "user-agent": "123pan/v2.4.0(Android_7.1.2;Xiaomi)",
+                        "platform": "android",
+                        "app-version": "61",
+                        "x-app-version": "2.4.0"
+                    }
+                    // 如果header在列表中，则修改
+                    if (header.toLowerCase() in headers) {
+                        value = headers[header.toLowerCase()];
+                    } else {
+                        console.log('header:', header);
+                    }
+                }
+                return originalRequestHeader.apply(this, [header, value]);
+            };
+
             XMLHttpRequest.prototype.send = function (body) {
                 originalSend.call(this, body);
             };
         }
-
 
         applyInterceptors()
 
@@ -129,14 +151,14 @@
             if (!targetNode) {
                 return; // 如果未找到目标节点，则提前退出
             }
-            const config = { childList: true, subtree: true }; // 添加 subtree 选项，以监听子节点的变动
+            const config = {childList: true, subtree: true}; // 添加 subtree 选项，以监听子节点的变动
 
             const observer = new MutationObserver((mutationsList, observer) => {
                 for (const mutation of mutationsList) {
                     for (const node of mutation.addedNodes) {
                         if (node.nodeType === 1 && node.classList.contains('upbody')) {
                             const uploadAD = node.querySelector('div.uppy-Dashboard-slowSpeed-banner')
-                            if (uploadAD){
+                            if (uploadAD) {
                                 uploadAD.remove()
                             }
                             observer.disconnect(); // 找到目标节点后断开观察器
