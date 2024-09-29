@@ -9,7 +9,6 @@
 // @version     1.7
 // @license     MIT
 // @author      Berger
-// @require     https://registry.npmmirror.com/sweetalert2/10.16.6/files/dist/sweetalert2.min.js
 // @description 去广告、适配网页1G下载、修改会员[仅供娱乐使用]
 
 
