@@ -6,12 +6,13 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.7
+// @version     1.8
 // @license     MIT
 // @author      Berger
 // @description 去广告、适配网页1G下载、修改会员[仅供娱乐使用]
 
 
+// @note         1.8 [修复]一些已知的BUG
 // @note         1.7 [新增]适配网页下载
 // @note         1.6 [适配]123Pan cn域名
 // @note         1.5 [修复]无法上传文件的BUG
@@ -72,12 +73,9 @@
 
                 // 检查并修改 /b/api/share/get 请求的 orderBy 和 orderDirection 参数
                 if (url.includes('/b/api/share/get')) {
-                    console.log('Original URL:', url);
-
                     if (!url.includes('orderBy=create_at') && !url.includes('orderDirection=desc')) {
                         this._url = url.replace('orderBy=file_name', 'orderBy=create_at')
                             .replace('orderDirection=asc', 'orderDirection=desc');
-                        console.log('Modified URL:', this._url);
                     }
                 }
 
@@ -106,11 +104,8 @@
                         "app-version": "61",
                         "x-app-version": "2.4.0"
                     }
-                    // 如果header在列表中，则修改
                     if (header.toLowerCase() in headers) {
                         value = headers[header.toLowerCase()];
-                    } else {
-                        console.log('header:', header);
                     }
                 }
                 return originalRequestHeader.apply(this, [header, value]);
@@ -121,26 +116,43 @@
             };
         }
 
+        function editShareDownloadButton() {
+            const mobileDownloadButton = `<svg class="icon undefined" aria-hidden="true"><use xlink:href="#icon-share_folders_downloads"></use></svg>下载文件(插件)`
+            const webDownloadButton = `<svg class="icon undefined" aria-hidden="true" style="color:#ffffff;margin-right:5px"><use xlink:href="#top_btn_download2"></use></svg>浏览器下载(插件)`
+
+            if (location.href.indexOf('123pan.com/s') || location.href.indexOf('123pan.cn/s')) {
+                const mobileDownloadButtonList = document.querySelectorAll('.appBottomBtnNew ')
+                if (mobileDownloadButtonList.length > 0) {
+                    mobileDownloadButtonList[0].innerHTML = mobileDownloadButton
+                }
+
+                const webDownloadButtonList = document.querySelectorAll('.register ')
+                if (webDownloadButtonList.length > 0) {
+                    webDownloadButtonList[0].innerHTML = webDownloadButton
+                    webDownloadButtonList[0].style.width = '150px'
+                }
+            }
+        }
+
         applyInterceptors()
 
 
         // 移除电脑端广告
         function removeAdForPC() {
             // 顶部广告
-            const topAD = document.querySelector('div[class="mfy-main-layout__head"]')
+            const topAD = document.querySelector('div.mfy-main-layout__head')
             utils.removeElement(topAD)
 
             // 右下角广告
-            const rightBottomAD = document.querySelector('div[class="activity-box"]')
-            const activityParent = rightBottomAD.closest('div')
-            utils.removeElement(activityParent)
+            const rightBottomAD = document.querySelector('div.activity-box')
+            utils.removeElement(rightBottomAD)
 
             //产品商城
-            const asideAD = document.querySelector('div[class="sider-member-btn"]')
+            const asideAD = document.querySelector('div.sider-member-btn')
             utils.removeElement(asideAD)
 
             // 其他网盘转入
-            const specialAD = document.querySelector('div[class="special-menu-item-container"]')
+            const specialAD = document.querySelector('div.special-menu-item-container')
             utils.removeElement(specialAD)
 
         }
@@ -182,6 +194,7 @@
                 removeAdForMobile()
                 removeAdForPC()
                 removeUploadAD()
+                editShareDownloadButton()
             },
         }
 
