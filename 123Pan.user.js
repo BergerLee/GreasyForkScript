@@ -3,15 +3,18 @@
 // @namespace   http://tampermonkey.net/
 // @match       https://www.123pan.com/*
 // @match       https://www.123pan.cn/*
+// @match       https://www.123684.com/*
+// @match       https://www.123865.com/*
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.8
+// @version     1.9
 // @license     MIT
 // @author      Berger
-// @description 去广告、适配网页1G下载、修改会员[仅供娱乐使用]
+// @description 去广告、修改会员[会员无实际效果，仅供娱乐]
 
 
+// @note         1.9 [适配]域名
 // @note         1.8 [修复]一些已知的BUG
 // @note         1.7 [新增]适配网页下载
 // @note         1.6 [适配]123Pan cn域名
