@@ -1,10 +1,9 @@
 // ==UserScript==
 // @name        智云枢多功能插件
 // @namespace   http://tampermonkey.net/
-// @match       https://online.zretc.net/*
 // @match       https://www.omniedu.com/*
 // @run-at      document-start
-// @version     2.96
+// @version     2.97
 // @license     MIT
 // @author      Berger
 // @description 智云枢一键签到、一键完成作业、一键考试、提前查看考试/作业分数
@@ -432,7 +431,7 @@
         utils.responseInterceptor('/submit-score').then(scoreResponse => {
             let score = scoreResponse['data'][0]['score']
             if (score) {
-                queryScoreButton.innerHTML = `<div data-v-439af87f="" class="instruction update-score"><p>
+                queryScoreButton.innerHTML = `<div data-v-0d315cdc="" class="instruction update-score"><p>
         当前试卷得分：${score} 分</p></div>`;
             }
         })
@@ -492,9 +491,9 @@
 
     class urlConstants {
         // 签到列表
-        static SIGN_LIST = "https://api.omniedu.net/instances/instances/{}/sign/stu/page?signInName=&stuSignInType=&pageSize=20&pageNum=1"
+        static SIGN_LIST = "https://api.omniedu.com/instances/instances/{}/sign/stu/page?signInName=&stuSignInType=&pageSize=20&pageNum=1"
         // 签到
-        static SIGN = "https://api.omniedu.net/instances/instances/{}/sign/{}/edit-stu-sign"
+        static SIGN = "https://api.omniedu.com/instances/instances/{}/sign/{}/edit-stu-sign"
         // 签到请求体
         static SIGN_BODY = {
             "signInId": "",
@@ -503,10 +502,10 @@
             "stuSignInType": 1 // 签到状态 4=请假 2=迟到 1=签到成功 3=早退 0=未签到
         }
         // 获取作业答案
-        static HOMEWORK_DETAIL = "https://api.omniedu.net/homework/homeworks/{}/detail-objective-list"
+        static HOMEWORK_DETAIL = "https://api.omniedu.com/homework/homeworks/{}/detail-objective-list"
 
         // 获取studentId url
-        static STUDENT_ID = "https://api.omniedu.net/instances/instances/stu/my-progress/{}"
+        static STUDENT_ID = "https://api.omniedu.com/instances/instances/stu/my-progress/{}"
     }
 
 })();
