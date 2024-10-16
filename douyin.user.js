@@ -960,7 +960,7 @@
         static OPEN_VALUE = 1
         static CLOSE_VALUE = 0
 
-        static TIPS = `在使用中遇到BUG请在<a style="color: #FE2C55" href="https://greasyfork.org/zh-CN/users/747774-berger-lee-berger" target="_blank">GreasyFork仓库</a>中反馈`
+        static TIPS = `在使用中遇到BUG请在<a style="color: #FE2C55" href="https://greasyfork.org/zh-CN/scripts/512771-%E6%8A%96%E9%9F%B3%E7%BB%BF%E5%8C%96%E6%8F%92%E4%BB%B6/feedback" target="_blank">GreasyFork仓库</a>中反馈`
         static DIALOG_TITLE = '抖音网页绿化插件'
         static VERSION = 'v1.0'
 
