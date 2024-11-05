@@ -10,8 +10,9 @@
 // @match       https://www.aliyundrive.com/*
 // @grant       unsafeWindow
 // @grant       GM_addStyle
+// @grant       GM_notification
 // @run-at      document-start
-// @version     1.95
+// @version     1.96
 // @license     MIT
 // @author      Berger
 // ==/UserScript==
@@ -79,6 +80,14 @@
             });
 
             observer.observe(document.body, {childList: true, subtree: true});
+        },
+
+        notifyTool(title, message) {
+            GM_notification({
+                text: message,
+                timeout: 3000,
+                title: title,
+            });
         }
     }
 
@@ -86,14 +95,20 @@
         const noticeBoard = document.querySelector('div[id="gong-box"]');
         utils.removeElement(noticeBoard)
 
-        const homeTopAd_1 = document.querySelector('div[id="home-row-dhsj"]');
+        const homeTopAd_1 = document.querySelector('div[id="home-row-gg"]');
         utils.removeElement(homeTopAd_1)
 
-        const homeTopAd_2 = document.querySelector('div[id="home-row-gd1"]');
+        const homeTopAd_2 = document.querySelector('div[id="home-row-gg2"]');
         utils.removeElement(homeTopAd_2)
 
-        const singleTopAd = document.querySelector('div[class="single-top-html"]');
-        utils.removeElement(singleTopAd)
+        const essayTopAd = document.querySelector('div[class="single-top-html"]');
+        utils.removeElement(essayTopAd)
+
+        utils.checkElement('.inner-wrapper-sticky>.sidebar-innter', function (essaySideBar) {
+            utils.removeElement(essaySideBar.children[0])
+            utils.removeElement(essaySideBar.children[2])
+            // console.log(essaySideBar.children)
+        })
 
         const essayBottomAd = document.querySelector('.single-bottom-html');
         utils.removeElement(essayBottomAd)
@@ -103,10 +118,6 @@
 
         const downloadBanner = document.querySelector('.download-page-info')
         utils.removeElement(downloadBanner.nextElementSibling)
-    }
-
-    function app_lnn_AD_special() {
-        GM_addStyle('iframe:not([src]){visibility:hidden !important}');
     }
 
     function lan_z_out_AD_normal() {
@@ -159,14 +170,7 @@
                 get_aliDrive_refresh_token()
             }
         },
-
-        initSpecial() {
-            if (url.indexOf('applnn.cc') !== -1) {
-                app_lnn_AD_special()
-            }
-        },
     }
 
     window.addEventListener('DOMContentLoaded', main.initNormal);
-    window.addEventListener('load', main.initSpecial);
 })();
