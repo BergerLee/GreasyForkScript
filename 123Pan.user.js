@@ -8,12 +8,13 @@
 // @grant       unsafeWindow
 // @grant       GM_addStyle
 // @run-at      document-start
-// @version     1.9
+// @version     2.0
 // @license     MIT
 // @author      Berger
 // @description 去广告、修改会员[会员无实际效果，仅供娱乐]
 
 
+// @note         2.0 [修复]精简失效等问题
 // @note         1.9 [适配]域名
 // @note         1.8 [修复]一些已知的BUG
 // @note         1.7 [新增]适配网页下载
@@ -39,6 +40,24 @@
                 if (element) {
                     element.remove()
                 }
+            },
+
+            removeElementWithCheck(className) {
+                this.checkElement(className, function (element) {
+                    utils.removeElement(element)
+                })
+            },
+
+            checkElement(className, callback) {
+                const observer = new MutationObserver(function (mutationsList, observer) {
+                    const element = document.querySelector(className);
+                    if (element) {
+                        observer.disconnect();
+                        callback(element)
+                    }
+                });
+
+                observer.observe(document.body, {childList: true, subtree: true});
             }
         }
 
@@ -143,20 +162,16 @@
         // 移除电脑端广告
         function removeAdForPC() {
             // 顶部广告
-            const topAD = document.querySelector('div.mfy-main-layout__head')
-            utils.removeElement(topAD)
+            utils.removeElementWithCheck('div.mfy-main-layout__head')
 
             // 右下角广告
-            const rightBottomAD = document.querySelector('div.activity-box')
-            utils.removeElement(rightBottomAD)
+            utils.removeElementWithCheck('div.activity-box')
 
             //产品商城
-            const asideAD = document.querySelector('div.sider-member-btn')
-            utils.removeElement(asideAD)
+            utils.removeElementWithCheck('div.sider-member-btn')
 
             // 其他网盘转入
-            const specialAD = document.querySelector('div.special-menu-item-container')
-            utils.removeElement(specialAD)
+            utils.removeElementWithCheck('div.special-menu-item-container')
 
         }
 
